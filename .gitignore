@@ -1,18 +1,36 @@
+# ---------------------------------------------------------------------------
+# Session transcripts — NEVER commit these.
+#
+# Captured /v1/messages bodies contain whatever you were working on: source,
+# paths, and everything you typed. dump-proxy.py writes them; they are inputs
+# to the harness, not artifacts of it.
+#
+# A set of these was published here once. Eight had been silently replaced by
+# an unrelated session after a proxy restart, and it went unnoticed until the
+# token counts stopped matching. tools/pre-commit-guard.sh is the backstop for
+# whatever these patterns miss.
+# ---------------------------------------------------------------------------
+captures/
+e1-dumps/
+**/req-[0-9][0-9][0-9][0-9][0-9].json
+**/manifest.jsonl
+*-dumps/
+*transcript*
+*session-capture*
+
+# Model generations — quality.py output embeds full model responses
+quality/
+*-quality.json
+
 # Derived caches — regenerate with tools/prefix.py
 .token-cache/
 *.pyc
 __pycache__/
 .venv/
 
-# Model weights (100+ GB) — see README for download instructions
+# Model weights (100+ GB) — see README
 *.gguf
 
 # Scratch
 *.tmp
-
-# Captured request bodies are NOT published — they are raw session transcripts.
-# dump-proxy.py restarts its counter at 1, so a later run silently overwrites
-# earlier captures in place; a published set can quietly become someone else's
-# session. Capture your own (see README) rather than trusting a committed set.
-captures/
-e1-dumps/
+*.swp

@@ -65,6 +65,17 @@ thing that matters for prefix caching.
 | `arm.sh` / `run-queue.sh` / `phase6.sh` | One-flag-different server arms, and unattended test queues |
 | `stub-server.py` | Never-answering `/v1/messages`; measures the client's abort in one trial |
 
+### Setup
+
+```bash
+ln -sf ../../tools/pre-commit-guard.sh .git/hooks/pre-commit
+```
+
+Do this before your first commit. The guard refuses anything shaped like a
+captured request body, a Claude Code session marker, a device/session id, or a
+credential — regardless of filename or `.gitignore`. It exists because this repo
+published a set of transcripts once; see below.
+
 ### Captures are not published
 
 The harness reads captured `/v1/messages` bodies, which are raw session
@@ -75,12 +86,20 @@ server-scripts/dump-proxy.py                 # :8004 -> :8003, writes ~/e1-dumps
 ANTHROPIC_BASE_URL=http://<host>:8004 claude  # then work normally
 ```
 
-⚠️ **`dump-proxy.py` restarts its sequence counter at 1**, so a later run
-silently overwrites `req-00001.json` onward *in place*. A capture set you
-believe is one session can quietly become a mix of two. Snapshot the directory
-before reusing it — this bit us: eight requests were replaced by an unrelated
-session between analysis and publication, and the substitution was invisible
-until the token counts stopped matching.
+**This went wrong once, and the tooling now prevents it.** `dump-proxy.py` used
+to restart its sequence counter at 1, silently overwriting `req-00001.json`
+onward *in place*. Eight requests of one session were replaced by an unrelated
+session, and the substitution was invisible — the files still parsed and still
+had plausible message counts — until their token counts were re-derived and
+stopped matching. That set had already been published.
+
+Three layers now stop it:
+
+1. `dump-proxy.py` resumes numbering past whatever exists and creates files
+   exclusively (`open(..., "xb")`), so a capture can never be clobbered.
+2. `.gitignore` excludes the known paths and filename shapes.
+3. `tools/pre-commit-guard.sh` blocks by *content shape*, catching transcripts
+   that were copied, renamed, or pasted somewhere new.
 
 ### Reproducing the headline result
 
