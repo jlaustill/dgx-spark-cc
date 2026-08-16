@@ -1,0 +1,18 @@
+# Derived caches — regenerate with tools/prefix.py
+.token-cache/
+*.pyc
+__pycache__/
+.venv/
+
+# Model weights (100+ GB) — see README for download instructions
+*.gguf
+
+# Scratch
+*.tmp
+
+# Captured request bodies are NOT published — they are raw session transcripts.
+# dump-proxy.py restarts its counter at 1, so a later run silently overwrites
+# earlier captures in place; a published set can quietly become someone else's
+# session. Capture your own (see README) rather than trusting a committed set.
+captures/
+e1-dumps/

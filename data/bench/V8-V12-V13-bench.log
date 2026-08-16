@@ -1,0 +1,42 @@
+== benchmarking gpt-oss-120b-MXFP4.gguf ==
+| model                          |       size |     params | backend    | ngl | n_ubatch |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | --: | -------: | --: | --------------: | -------------------: |
+| gpt-oss 120B MXFP4 MoE         |  59.02 GiB |   116.83 B | CUDA       |  99 |      512 |   1 |          pp4096 |      1872.78 ± 12.43 |
+| gpt-oss 120B MXFP4 MoE         |  59.02 GiB |   116.83 B | CUDA       |  99 |      512 |   1 |         pp16384 |       1718.07 ± 0.54 |
+| gpt-oss 120B MXFP4 MoE         |  59.02 GiB |   116.83 B | CUDA       |  99 |      512 |   1 |         pp65536 |       1357.88 ± 2.85 |
+| gpt-oss 120B MXFP4 MoE         |  59.02 GiB |   116.83 B | CUDA       |  99 |     2048 |   1 |          pp4096 |       2355.89 ± 2.58 |
+| gpt-oss 120B MXFP4 MoE         |  59.02 GiB |   116.83 B | CUDA       |  99 |     2048 |   1 |         pp16384 |       2234.24 ± 9.71 |
+| gpt-oss 120B MXFP4 MoE         |  59.02 GiB |   116.83 B | CUDA       |  99 |     2048 |   1 |         pp65536 |      1611.47 ± 10.10 |
+
+build: 687e778 (1)
+
+== benchmarking gpt-oss-120b-Q4_K_M.gguf ==
+| model                          |       size |     params | backend    | ngl | n_ubatch |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | --: | -------: | --: | --------------: | -------------------: |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |      512 |   1 |          pp4096 |       1275.60 ± 5.04 |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |      512 |   1 |         pp16384 |       1213.43 ± 1.03 |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |      512 |   1 |         pp65536 |        997.50 ± 2.02 |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |     2048 |   1 |          pp4096 |       1807.27 ± 9.90 |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |     2048 |   1 |         pp16384 |       1726.79 ± 4.59 |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |     2048 |   1 |         pp65536 |       1338.31 ± 2.90 |
+
+build: 687e778 (1)
+
+== normalised (effective TFLOP/s) ==
+model                                    test        t/s   TFLOP/s
+gpt-oss 120B MXFP4 MoE                 pp4096     1872.8     19.10
+gpt-oss 120B MXFP4 MoE                pp16384     1718.1     17.52
+gpt-oss 120B MXFP4 MoE                pp65536     1357.9     13.85
+gpt-oss 120B MXFP4 MoE                 pp4096     2355.9     24.03
+gpt-oss 120B MXFP4 MoE                pp16384     2234.2     22.79
+gpt-oss 120B MXFP4 MoE                pp65536     1611.5     16.44
+gpt-oss 120B Q4_K - Medium             pp4096     1275.6     13.01
+gpt-oss 120B Q4_K - Medium            pp16384     1213.4     12.38
+gpt-oss 120B Q4_K - Medium            pp65536      997.5     10.17
+gpt-oss 120B Q4_K - Medium             pp4096     1807.3     18.43
+gpt-oss 120B Q4_K - Medium            pp16384     1726.8     17.61
+gpt-oss 120B Q4_K - Medium            pp65536     1338.3     13.65
+
+Results appended to /home/linux/e3-results.md
+Ceiling holds  -> ~8 TFLOP/s. MXFP4 buys nothing on prefill; drop the custom quant.
+Ceiling breaks -> materially higher. Novel finding, and the custom quant is justified.

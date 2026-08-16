@@ -1,0 +1,12 @@
+total params         284,334,567,511
+current weights              94.6 GiB   (reported 95.9)
+pure MXFP4                  140.7 GiB   (doc says 144.3)
+
+weight budget               106.0 GiB  -> 3.202 bpw average
+MXFP4-eligible fraction of params: 40.1%   (rest pinned at 2.5 bpw)
+
+  if native path is 1.19x on the portion that takes it  -> overall 1.068x  (+6.8%)
+  if native path is 1.31x on the portion that takes it  -> overall 1.105x  (+10.5%)
+  if native path is 1.43x on the portion that takes it  -> overall 1.137x  (+13.7%)
+
+compare: -ub 2048 is +31.0% on V4 prefill, one flag, already applied (#12).
