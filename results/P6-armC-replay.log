@@ -1,0 +1,8 @@
+replaying 3 requests at http://127.0.0.1:8000  tag=ds4-armC
+
+#  1  prefilled         0  reused         0 (     ?)  of         0  wall     1.2s
+#  2  prefilled         0  reused         0 (     ?)  of         0  wall   376.6s
+#  3  prefilled         0  reused   114,427 (100.0%)  of   114,427  wall    26.8s
+
+total prefilled 0 tok   reused 114,427 tok   wall 6.7 min   (0.0 t/s)
+wrote /home/linux/verify/replays/ds4-armC.json

@@ -1,0 +1,10 @@
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 124546 MiB):
+  Device 0: NVIDIA GB10, compute capability 12.1, VMM: yes, VRAM: 124546 MiB
+| model                          |       size |     params | backend    | ngl | n_ubatch |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | --: | -------: | --: | --------------: | -------------------: |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |      512 |   1 |          pp4096 |       1296.95 ± 3.33 |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |      512 |   1 |         pp65536 |       1007.23 ± 2.98 |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |     2048 |   1 |          pp4096 |       1819.86 ± 3.63 |
+| gpt-oss 120B Q4_K - Medium     |  81.81 GiB |   116.83 B | CUDA       |  99 |     2048 |   1 |         pp65536 |       1317.80 ± 4.59 |
+
+build: 687e778 (1)

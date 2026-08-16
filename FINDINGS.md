@@ -150,20 +150,47 @@ live kv cache miss live=321864 prompt=325568 common=1 reason=token-mismatch
 
 **Fix:** `--kv-disk-dir` plus `--kv-cache-cold-max-tokens >= --ctx`.
 
-**Result [unverified]:** same conversation, cold then warm — 1517.4s → 1.4s on a
-67-token turn against a 321k prefix.
+### Measured, with the confound removed [verified]
 
-⚠️ **That comparison changes two variables at once.** The cache warmed *and* the
-turn shrank from 320k new tokens to 67. The ordinary in-RAM live cache produces
-the same result on turn 2 with no disk cache at all. The 1000× figure should not
-be quoted until arm (d) of V1.1 — restart the server, then replay — isolates it.
+The originally quoted **1517.4s → 1.4s, "roughly 1000×"** changed two variables at
+once: the cache warmed *and* the turn shrank from 320k new tokens to 67. The
+ordinary in-RAM live cache produces that turn-2 speedup with no disk cache at all.
+
+Only a **restart** separates them — it empties the live cache, so anything that
+survives is the disk. Three arms, same replayed conversation:
+
+| arm | config | cold prefill |
+|---|---|---:|
+| A | no `--kv-disk-dir` | **370.1 s** |
+| C | `--kv-disk-dir`, `cold-max ≥ ctx`, cold start | **376.6 s** |
+| D | same as C, **after a server restart** | **38.8 s** |
+
+Arm D's server log shows exactly what happened:
+
+```
+kv cache hit text tokens=104944 ... load=162.9 ms
+chat ctx=104944..114426:9482  prompt done 38.459s
+```
+
+A 104,944-token checkpoint loaded from disk in **163 ms**, leaving only 9,482
+tokens to prefill.
+
+**The disk KV cache is real and worth 9.6× on a cold start.** Arm A ≈ arm C
+confirms it does nothing on a genuinely cold prompt, as it should. But the
+**~1000× headline was inflated roughly 100×** by the confound; the honest figure
+for this workload is **9.6×**.
 
 ## 2. Background traffic evicts the agent's cache
 
-**[unverified]**
+**[verified — the alias]** · **[unverified — the eviction]**
 
-`ANTHROPIC_SMALL_FAST_MODEL` was set to a "cheaper" model id, but `/v1/models`
-reported both ids resolving to the same weights. One model, one slot, two
+`ANTHROPIC_SMALL_FAST_MODEL` was set to a "cheaper" model id. `/v1/models`
+confirms both ids resolve to one model:
+
+```
+ids:            ['deepseek-v4-flash', 'deepseek-v4-pro']
+distinct names: {'DeepSeek V4 Flash'}
+``` One model, one slot, two
 aliases — so Claude Code's background title/summary calls preempted the agent
 loop on the same engine.
 
@@ -175,7 +202,7 @@ the null that the observed alternation was the agent's own divergence.
 
 ## 3. The disk cache can starve itself
 
-**[corrected]**
+**[verified — the numbers hold]**
 
 Checkpoints are cumulative full prefixes. The ladder written by one long
 conversation can evict the checkpoints that would have prevented the next
@@ -186,24 +213,42 @@ re-prefill:
 18:59:39  kv cache evicted reason=disk-cache-full tokens=307200 hits=0
 ```
 
-**Corrections to the original numbers:**
+**Measured ladder** for one 120,699-token conversation, by listing the directory:
 
-- The checkpoint interval is **10,240 tokens**, not 20,480 —
-  `KV_CACHE_DEFAULT_CONTINUED_INTERVAL_TOKENS = 10000` (`ds4_kvstore.c:42`)
-  rounded up to `KV_CACHE_DEFAULT_BOUNDARY_ALIGN_TOKENS = 2048`
-  (`ds4_kvstore.c:41`) by `kv_cache_continued_step()`.
-- The stated ladder — "~21 snapshots totalling ~46 GiB" — does not follow from
-  that interval, from 13.5 KiB/token, or from cumulative prefixes. **Treat the
-  46 GiB as unconfirmed** until V3.1 simply lists the directory.
-- Eviction *is* hit-weighted, but that is not the dominant term. The score
-  (`ds4_kvstore.c:532`) is `(effective_hits + 1.0) × tokens/file_size`, with hits
-  decaying on a 6-hour half-life. What actually kills the intermediate rungs is
-  `kv_cache_incoming_supersedes_continued()`, which multiplies a **never-hit
-  superseded rung by 0.05** — a 20× penalty.
+| file | bytes | ≈ tokens | delta |
+|---:|---:|---:|---:|
+| 1 | 305,964,886 | 21,908 | 21,908 |
+| 2 | 587,926,187 | 42,097 | 20,189 |
+| 3 | 869,887,377 | 62,286 | 20,189 |
+| 4 | 1,151,851,315 | 82,475 | 20,189 |
+| 5 | 1,433,821,833 | 102,665 | 20,190 |
+| 6 | 1,468,812,441 | 105,171 | 2,505 |
 
-That penalty is deliberate and correct for append-only growth: a longer prefix
-strictly dominates its own ancestors. It is wrong for a diverging workload, which
-is the same theme as #11.
+**6 files, 5.4 GiB.**
+
+- **13.64 KiB/token**, from the shutdown checkpoint (1,607.59 MiB / 120,699
+  tokens) — the stated 13.5 KiB is right.
+- **Checkpoint spacing 20,189 tokens** — the stated ~20,480 is right.
+- Scaled to a 320k conversation (files linear, total quadratic): **~16 files,
+  ~38 GiB** against the stated ~21 files / ~46 GiB. Same order; the original ran
+  slightly higher, plausibly a longer conversation.
+
+⚠️ **A correction issued during verification was itself wrong and is retracted.**
+An earlier pass read `KV_CACHE_DEFAULT_CONTINUED_INTERVAL_TOKENS = 10000` aligned
+up to 2048 and concluded the interval was **10,240**, not 20,480. That is the
+*configured step*, not the realised spacing: `ds4_kvstore_continued_store_target()`
+fires only when `live_tokens % step == 0`, and prefill advances in batches that
+land on every second multiple. Observed spacing is 20,189. **The original document
+was right and the code-derived correction was wrong** — a reminder that reading
+the constant is not the same as measuring the behaviour.
+
+**Eviction policy.** The score (`ds4_kvstore.c:532`) is
+`(effective_hits + 1.0) × tokens/file_size`, hits decaying on a 6-hour half-life.
+Hit-weighting is real but weak; the term that actually kills intermediate rungs is
+`kv_cache_incoming_supersedes_continued()`, which multiplies a **never-hit
+superseded rung by 0.05**. That is deliberate and correct for append-only growth —
+a longer prefix strictly dominates its ancestors — and wrong for a diverging
+workload, the same theme as #11.
 
 **Practical:** the cache reached **225 GB** on disk in normal use. Budget
 accordingly; 64 GiB is self-defeating.
@@ -678,23 +723,48 @@ The advantage is largest at small ubatch and shallow depth — where
 matrix-multiply dominates and attention does not — which is what a
 dequantisation-avoidance explanation predicts.
 
-⚠️ **The attribution is not established, and one attempt to establish it failed.**
+### The attribution, decomposed [verified]
+
 MXFP4 differs from Q4_K_M in *two* ways: it takes the native path **and** it is
-59.0 GiB against 81.8. The size difference is noted as biasing *against* MXFP4,
-but that is an argument, not a measurement.
+59.0 GiB against 81.8. Separating them needs a build with Blackwell MMA suppressed
+on **both** host and device (`-DGGML_NO_BLACKWELL_MMA`, `common.cuh:286` and
+`:360`), so the two selectors cannot desynchronise.
 
-A runtime ablation was attempted (flip `use_native_fp4` at `mmq.cu:131` behind an
-env var, leaving `blackwell_mma_available()` alone so host and device tile configs
-stay in sync). **It is invalid.** `mmq.cuh:244` still calls
-`blackwell_mma_available(cc)` to select `ggml_cuda_mmq_get_config_blackwell(...)`,
-so the tile config remained FP4 while the data went through q8_1. The result ran
-1.73× faster and produced `nan` on every perplexity chunk. Fast because it was
-computing nothing.
+**Q4_K_M is the control** — it never enters the FP4 branch, so the flag must be a
+no-op for it, and is: 1275.60 → 1296.95, 997.50 → 1007.23, 1807.27 → 1819.86 t/s,
+all inside the 4% noise floor. MXFP4 meanwhile slows 15–24%.
 
-**A valid ablation needs a compile-time build variant**, because the `__device__`
-config selector in `mmq.cuh` uses compile-time macros — host and device must move
-together. Any future attempt must gate on perplexity matching the baseline before
-a single throughput number is believed.
+| test | MXFP4/Q4_K_M pristine | ablated | native path worth |
+|---|---:|---:|---:|
+| pp4096 ub512 | 1.468× | 1.096× | **1.34×** |
+| pp65536 ub512 | 1.361× | 1.109× | **1.23×** |
+| pp4096 ub2048 | 1.304× | 1.059× | **1.23×** |
+| pp65536 ub2048 | 1.204× | 1.037× | **1.16×** |
+
+**The native FP4 path is worth 1.16–1.34×. Fewer bytes and cheaper unpacking are
+worth only 1.04–1.11×.** So the hardware attribution is right in direction — the
+tensor-core path is the dominant term — but the originally quoted 1.19–1.43× is
+the *combined* effect, not the path's contribution.
+
+### ⚠️ It is not free: the native path costs 6.4% perplexity
+
+| | PPL |
+|---|---:|
+| native FP4 path (default) | **8.0227** |
+| dequant path (ablated) | **7.5423** |
+
+`use_native_fp4` selects `block_fp4_mmq` for the **activations** — 4-bit — where
+the dequant route uses `block_q8_1_mmq` — 8-bit. Turning the path off makes the
+model measurably *more accurate*.
+
+Both #7 and #13 present native FP4 as a pure win. **It is a speed/accuracy trade,
+and the accuracy side was never measured.** Whether 1.16–1.34× of prefill is worth
+6.4% of perplexity is a judgement, but it should be made knowingly.
+
+**Honest limit:** the branch bundles Blackwell FP4 MMA *and* 4-bit activations, so
+this cannot prove the tensor cores specifically account for the 1.16–1.34×.
+Separating them would need a build keeping FP4 MMA with 8-bit activations, which
+the code does not support.
 
 ### What this means for a custom quant
 
@@ -931,7 +1001,7 @@ Server and build scripts live in `/home/linux`: `build-llamacpp.sh`,
 `dsv4-server.sh`, `qwen-server.sh`, `gptoss-server.sh`, `install-*.sh`,
 `cleanup-models.sh`.
 
-Verification harness, per-test results and raw logs live in ``data/` and `results/``.
+Verification harness, per-test results and raw logs live in `tools/`, `results/` and `data/`.
 Methodology, falsified assumptions and the full test log are in
 `NOTES.md`. The pre-verification version of this document is preserved
 as `results/FINDINGS.original-pre-verification.md`.

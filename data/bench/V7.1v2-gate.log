@@ -1,0 +1,12 @@
+[21:10:18] PERPLEXITY GATE — ablated build must match the pristine build
+[21:10:18]   gpt-oss-120b-MXFP4 / pristine
+[21:11:14]   gpt-oss-120b-MXFP4 / ablated
+[21:11:52]   gpt-oss-120b-Q4_K_M / pristine
+[21:15:13]   gpt-oss-120b-Q4_K_M / ablated
+
+=========== GATE ===========
+gpt-oss-120b-MXFP4       pristine: PPL = 8.0227   ablated: PPL = 7.5423  
+    ** MISMATCH or nan — the ablation is invalid, do NOT bench **
+gpt-oss-120b-Q4_K_M      pristine: PPL = 8.6273   ablated: PPL = 8.6273  
+    MATCH — arithmetic preserved
+============================

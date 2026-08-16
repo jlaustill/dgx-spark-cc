@@ -1,0 +1,8 @@
+files: 6
+total: 5818264039 bytes = 5.5G
+ 305964886  /home/linux/.ds4/server-kv/0d3060b5a25114e24f33414f07fd6158ceabcbd7.kv
+ 587926187  /home/linux/.ds4/server-kv/3a831621c3a3a65508a0a43ed42b8207f60e7816.kv
+ 869887377  /home/linux/.ds4/server-kv/e4fc9b7c8ad20cde31a0851a20604c3ef6fd3394.kv
+1151851315  /home/linux/.ds4/server-kv/3164e999f010c188843fa23bd74838ab694c6daf.kv
+1433821833  /home/linux/.ds4/server-kv/99c6a7792cbe825370d3411eeacbc01f80be166e.kv
+1468812441  /home/linux/.ds4/server-kv/df60dac299358fe7d51f6d3dcfc7cf5d45d0ffd5.kv

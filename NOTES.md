@@ -56,7 +56,11 @@ a discriminating outcome written down *before* the test ran.
 | A CPU-only tokenizer server could coexist with the 112 GB production server | mmap-loading a 100 GB model against mlocked memory thrashes; it eventually loaded but was not viable alongside real work |
 | The server would reuse the ~9,700-token common prefix on a head change | Reuse is **0**. I predicted partial reuse from reading the code path and was wrong — see #16 for why |
 | Whole-string common *suffix* measures shift-recoverability | It does not. These requests insert at the head *and* append at the tail, so the suffix is short for an unrelated reason. Needed an n-gram scan from the divergence point |
-| `pkill -f <pattern>` is safe | It matches **its own shell** when the pattern appears in the command line. Self-killed three commands mid-run, once silently skipping a `systemctl stop` |
+| `pkill -f <pattern>` is safe | It matches **its own shell** when the pattern appears in the command line. Hit this **five times**, twice silently skipping the thing it guarded. Use `pgrep -x` on the exact process name, a recorded PID, or memory usage instead |
+| Patching one side of a host/device pair is a clean ablation | It is not. v1 patched `use_native_fp4` only; `mmq.cuh:267` still selected Blackwell tiles on the device. Ran 1.73x "faster" and produced `nan`. **A performance ablation without a correctness gate is not an experiment** |
+| An equality gate validates an ablation | Only when the paths *should* be identical. For MXFP4 they legitimately differ (4-bit vs 8-bit activations), so equality flagged a valid ablation as broken. Compare against a **control** that must not change |
+| A published capture set stays what you analysed | `dump-proxy.py` reset its counter on restart and overwrote eight captures in place with an unrelated session. Invisible until token counts stopped matching — after publication |
+| The checkpoint interval is the configured constant | It is the *realised spacing*. Reading `interval 10000` aligned to 2048 gave 10,240; measurement gave 20,189. Retracted |
 
 ---
 
@@ -252,6 +256,139 @@ reproduces.
 **Lesson worth generalising:** a performance ablation without a correctness gate
 is not an experiment. Every future kernel-path test gets perplexity first,
 throughput second.
+
+### V7.1 — is MXFP4 fast because of tensor cores? ✅ **answered on the second attempt**
+
+> **Registered:** ratio collapses toward 1.0 -> the native path is the cause.
+> Ratio holds at 1.2-1.4x -> the advantage is bytes, and #13 is misattributed.
+
+**v1 was invalid** (see the wrong-assumptions table). v2 suppresses Blackwell MMA
+via a single compile-time flag that both selectors derive from, so host and device
+move together:
+
+```
+common.cuh:286  #if __CUDA_ARCH__ >= BLACKWELL   -> BLACKWELL_MMA_AVAILABLE  (device)
+common.cuh:360  blackwell_mma_available(cc)                                  (host)
+```
+
+The patch is inert without `-DGGML_NO_BLACKWELL_MMA`, so the pristine build stays
+comparable. Verified the flag took effect before measuring anything:
+`system_info` prints `ARCHS = 1210 ... BLACKWELL_NATIVE_FP4 = 1` on pristine and
+`ARCHS = 1210 ...` on ablated — same arch, feature gone, so no JIT confound.
+
+**Q4_K_M is the control.** It never enters the FP4 branch, so the flag must be a
+no-op for it:
+
+| | pristine | ablated | delta |
+|---|---:|---:|---:|
+| pp4096 ub512 | 1275.60 | 1296.95 | +1.7% |
+| pp65536 ub512 | 997.50 | 1007.23 | +1.0% |
+| pp4096 ub2048 | 1807.27 | 1819.86 | +0.7% |
+
+All within the 4% noise floor, while MXFP4 slows 15-24%. That is what makes the
+result trustworthy where v1's was not.
+
+**Result:** native FP4 path **1.16-1.34x**; bytes and unpack **1.04-1.11x**;
+accuracy cost **PPL 7.5423 -> 8.0227 (+6.4%)** because the path quantises
+activations to 4-bit (`block_fp4_mmq`) rather than 8-bit (`block_q8_1_mmq`).
+
+**The gate as written was wrong.** It demanded the ablated build match the
+pristine build exactly, and flagged MXFP4 as invalid. But the two paths are not
+*supposed* to be numerically identical for MXFP4 — different activation precision
+is the whole point. The Q4_K_M control is what established soundness. A pass/fail
+equality gate was the wrong shape; it should compare against the control.
+
+**Honest limit:** the branch bundles Blackwell FP4 MMA and 4-bit activations, so
+this cannot isolate the tensor cores specifically.
+
+### V12.2/V12.3 — is 2048 the ubatch optimum, or just the largest tried? ✅
+
+| ubatch | pp4096 | pp65536 |
+|---:|---:|---:|
+| 512 | 1878.57 | 1339.67 |
+| 1024 | 2024.66 | 1447.92 |
+| **2048** | **2254.42** | **1620.40** |
+| 4096 | 2219.48 | 1579.74 |
+
+**2048 is a genuine peak.** 4096 is 2.5% slower at pp65536 with error bars of
++/-1.2, so that is real rather than noise.
+
+Note the pp4096 rows carry huge error bars (+/-280 at ub1024, +/-111 at ub2048):
+a 4096-token prompt at large ubatch is only a couple of batches, so per-run
+variance dominates. The pp65536 rows are the trustworthy ones. This applies to
+any shallow-depth bench row, including some in the original document.
+
+### V6.2 — is decode at depth bound by the KV read? ❌ refuted
+
+| depth | f16 KV | q8_0 KV |
+|---:|---:|---:|
+| 0 | 63.34 | 61.70 |
+| 16,384 | 41.86 | 41.43 |
+| 65,536 | 20.21 | 20.65 |
+| 131,072 | 12.13 | 12.12 |
+
+Halving KV bytes changed decode by **0-2% at every depth**. With flash attention
+the KV is read in tiles and dequantised on the fly, so q8_0 halves traffic while
+leaving the arithmetic identical — unchanged timing means arithmetic is binding.
+
+Shallow decode *is* bandwidth-bound as claimed: 63.34 t/s x 3.5 GB/token =
+**221 GB/s**, matching the document's ~227.
+
+### V7.3 — the decode corollary ❌ refuted
+
+gpt-oss MXFP4 **50.21 t/s** vs Qwen Q8_0 **63.34 t/s** at matched shallow depth.
+Predicted 1.21x in gpt-oss's favour; measured **0.79x**. Effective bandwidth
+143 GB/s vs 221. Decode has no native FP4 path, so MXFP4 pays dequant per byte.
+
+### V9.2 — do rope flags apply inside the training window? ✅ / corruption ❌
+
+| arm | PPL |
+|---|---:|
+| no rope flags | 4.7195 +/- 0.08943 |
+| `--rope-scale 2` | 4.5520 +/- 0.08650 |
+
+Perplexity is **bit-exact deterministic** — rerunning the reference reproduced
+`4.7195 +/- 0.08943` to four decimals — so the difference is caused entirely by
+the flag. The flags are applied. But output *improves* 3.5%; at 2048 context,
+positions 0-2047 map to 0-1023 and stay inside trained range, so nothing is
+extrapolated. The corruption claim remains untested where it would bite.
+
+Capping is `llama-server`-specific; `llama-perplexity` at `-c 262144` only warns.
+
+### V1.1 — is the disk KV cache worth 1000x? ⚠️ 9.6x
+
+| arm | config | cold prefill |
+|---|---|---:|
+| A | no `--kv-disk-dir` | 370.1 s |
+| C | disk enabled, cold | 376.6 s |
+| D | disk enabled, **after restart** | **38.8 s** |
+
+Only a restart empties the live cache, so only arm D isolates disk. It loaded a
+104,944-token checkpoint in **163 ms** and prefilled the remaining 9,482.
+Mechanism real; headline inflated ~100x by the original confound.
+
+### V2 — two ids, one model ✅
+
+```
+ids:            ['deepseek-v4-flash', 'deepseek-v4-pro']
+distinct names: {'DeepSeek V4 Flash'}
+```
+
+### V3.1 — the checkpoint ladder ✅ (and a retraction)
+
+6 files, 5.4 GiB for a 120,699-token conversation, spaced **20,189 tokens**, at
+**13.64 KiB/token**. Scaled to 320k: ~16 files, ~38 GiB vs the stated ~21 / ~46.
+
+**Retraction:** an earlier pass in this same verification "corrected" the interval
+to 10,240 from reading the constant. That is the *configured step*;
+`ds4_kvstore_continued_store_target()` fires only when `live_tokens % step == 0`
+and prefill lands on every second multiple. The original document was right.
+
+### V4.2 — the two-engine comparison ⚠️ confounded
+
+The same conversation renders to **114,426 tokens on ds4-server** and **140,656 on
+llama.cpp** — a 19% gap from different chat templates. "Identical input, two
+engines" is not achievable at the token level.
 
 ### V13.3 — how much of V4 could take the MXFP4 path? ✅
 

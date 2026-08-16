@@ -1,0 +1,6 @@
+replaying 1 requests at http://127.0.0.1:8000  tag=ds4-armD
+
+#  1  prefilled         0  reused         0 (     ?)  of         0  wall     1.3s
+
+total prefilled 0 tok   reused 0 tok   wall 0.0 min   (0.0 t/s)
+wrote /home/linux/verify/replays/ds4-armD.json
