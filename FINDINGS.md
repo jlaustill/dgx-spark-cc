@@ -883,15 +883,39 @@ file first. But **five prompts is not an evaluation.**
 Shipping requires the eval that E4 needs anyway. Until then the win is proven and
 parked.
 
-### Generality
+### Generality — narrower than it looks [verified against two other templates]
 
-**Any client that appends system messages mid-conversation, against any template
-that hoists system messages, destroys prefix caching on every such request.** The
-combination is silent: both components are behaving as designed.
+The conditional holds — *any* template that hoists system messages will do this —
+but the population of such templates is small. Comparing the three models on this
+box:
 
-⚠️ Tested on one session in "learning" output style with a 35 KB `SessionStart`
-hook, so the head is unusually large. Generality across output styles and other
-hoisting templates is untested (V15.3).
+| model | `messages[0]` system | later system messages | consequence |
+|---|---|---|---|
+| **DeepSeek V4** | all collected into `ns.system_prompt` | **hoisted to the head** | prefix cache destroyed |
+| **Qwen3-Coder** | `system_message`, rest `messages[1:]` | **rendered in place** | append-only, no problem |
+| **gpt-oss** | `developer_message`, rest `messages[1:]` | **silently dropped** | content loss |
+
+Qwen's turn loop renders a later system message where the client put it:
+
+```jinja
+{%- elif message.role == "user" or message.role == "system" or message.role == "assistant" %}
+    {{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>' + '\n' }}
+```
+
+**So V4's template is the outlier, and the fix in this document makes V4 behave
+exactly like Qwen already does.** That is the strongest argument that in-place
+rendering is correct behaviour rather than a workaround — it is the mainstream
+convention, and Qwen has no cache problem precisely because it follows it.
+
+**gpt-oss has a different latent bug.** Its turn loop branches on
+`assistant`/`tool`/`user` and then ends — no `system` branch, no `else`. A
+mid-conversation system message hits nothing and is **silently dropped**. Sending
+Claude Code's reminders to a gpt-oss server means the model never sees them: a
+correctness failure rather than a performance one, and equally silent.
+
+⚠️ Still tested on one captured session, in "learning" output style with a 35 KB
+`SessionStart` hook. Generality across *output styles* remains untested; what is
+now established is generality across *templates*.
 
 ## 16. One hardcoded `return 0` costs ~29,000 tokens per session
 

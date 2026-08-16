@@ -423,6 +423,49 @@ The same conversation renders to **114,426 tokens on ds4-server** and **140,656 
 llama.cpp** — a 19% gap from different chat templates. "Identical input, two
 engines" is not achievable at the token level.
 
+### V15.3 — is the hoisting problem general? ⚠️ **specific to DeepSeek V4**
+
+> **Registered:** #15 claims "any client that appends system messages
+> mid-conversation, against any template that hoists system messages, destroys
+> prefix caching." The conditional is trivially true; the question is whether the
+> population of hoisting templates is large.
+
+Extracted `tokenizer.chat_template` from each model on the box and traced how each
+handles a system message that is *not* `messages[0]`:
+
+| model | `messages[0]` | later system messages | consequence |
+|---|---|---|---|
+| **DeepSeek V4** | all collected into `ns.system_prompt` | **hoisted to the head** | prefix cache destroyed |
+| **Qwen3-Coder** | `system_message`, rest `messages[1:]` | **rendered in place** | append-only, no problem |
+| **gpt-oss** | `developer_message`, rest `messages[1:]` | **silently dropped** | content loss |
+
+Qwen renders it where the client put it:
+
+```jinja
+{%- elif message.role == "user" or message.role == "system" or message.role == "assistant" %}
+    {{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>' + '\n' }}
+```
+
+gpt-oss's turn loop branches on `assistant` / `tool` / `user` and then `endfor` —
+no `system` branch, no `else`. A mid-conversation system message matches nothing.
+
+**Two consequences.**
+
+1. **The E7 patch makes V4 behave exactly like Qwen.** That reframes it from "a
+   template hack to recover cache" to "aligning an outlier with the mainstream
+   convention". Qwen has no cache problem *because* it renders later system
+   messages in place. This materially lowers the risk the quality A/B was hedging
+   against — the patched rendering is what other models already show their model.
+
+2. **gpt-oss has a separate, unreported bug.** Claude Code's mid-conversation
+   reminders sent to a gpt-oss server are dropped entirely; the model never sees
+   them. A correctness failure rather than a performance one, and equally silent —
+   no error, no warning, content just disappears.
+
+What remains untested is generality across *output styles*: the capture used
+"learning" mode with a 35 KB SessionStart hook, so the head is unusually large.
+Generality across *templates* is now established, and it is narrow.
+
 ### V13.3 — how much of V4 could take the MXFP4 path? ✅
 
 Read from the actual GGUF tensor list across all four shards:
