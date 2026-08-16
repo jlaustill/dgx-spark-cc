@@ -1,0 +1,478 @@
+{
+ "accepted": [
+  {
+   "pr": 1097,
+   "issue": 1094,
+   "title": "fix: precompute const-width bit-range extraction mask (#1094)",
+   "base": "b3f0275d8b069ea2f4e203d9e19195e5d773b55c",
+   "merge": "b13851722687dcf30f3602ba67b04f607ec1d907",
+   "fixture": "tests/bit-indexing/bit-range-const-width-float.test.cnx",
+   "fixture_files": [
+    "tests/bit-indexing/bit-range-const-width-float.expected.c",
+    "tests/bit-indexing/bit-range-const-width-float.expected.cpp",
+    "tests/bit-indexing/bit-range-const-width-float.test.cnx",
+    "tests/bit-indexing/bit-range-const-width.expected.c",
+    "tests/bit-indexing/bit-range-const-width.expected.cpp",
+    "tests/bit-indexing/bit-range-const-width.test.cnx"
+   ],
+   "src": [
+    "src/transpiler/output/codegen/generators/expressions/PostfixExpressionGenerator.ts",
+    "src/transpiler/output/codegen/generators/expressions/__tests__/PostfixExpressionGenerator.test.ts",
+    "tests/bit-indexing/bit-range-const-width-float.test.c",
+    "tests/bit-indexing/bit-range-const-width-float.test.cpp",
+    "tests/bit-indexing/bit-range-const-width.test.c",
+    "tests/bit-indexing/bit-range-const-width.test.cpp",
+    "tests/slice-assignment/slice-const-width-source.test.c",
+    "tests/slice-assignment/slice-const-width-source.test.cpp"
+   ],
+   "n_src": 8,
+   "passes_with_fix": 1
+  },
+  {
+   "pr": 1078,
+   "issue": 1074,
+   "title": "feat: implement `forever` infinite-loop statement (ADR-113, #1074)",
+   "base": "f04a84a5d6b5a132256a2525c88141f6d77044cf",
+   "merge": "7fc4e81720ccde75caaa8ef2b62194c42d7625b3",
+   "fixture": "tests/control-flow/forever-basic.test.cnx",
+   "fixture_files": [
+    "tests/control-flow/forever-basic.expected.c",
+    "tests/control-flow/forever-basic.expected.cpp",
+    "tests/control-flow/forever-basic.test.cnx",
+    "tests/control-flow/forever-non-void-error.expected.error",
+    "tests/control-flow/forever-non-void-error.test.cnx"
+   ],
+   "src": [
+    "docs/architecture-decisions.md",
+    "docs/decisions/adr-113-forever-loops.md",
+    "docs/error-codes.md",
+    "docs/learn-cnext-in-y-minutes.md",
+    "docs/misra-compliance.md",
+    "examples/nucleo-f446re/blink.c",
+    "examples/nucleo-f446re/blink.cnx",
+    "examples/nucleo-f446re/blink.h",
+    "grammar/CNext.g4",
+    "src/transpiler/logic/analysis/ReturnPathAnalyzer.ts",
+    "src/transpiler/logic/analysis/__tests__/ReturnPathAnalyzer.test.ts",
+    "src/transpiler/logic/parser/grammar/CNext.interp",
+    "src/transpiler/logic/parser/grammar/CNext.tokens",
+    "src/transpiler/logic/parser/grammar/CNextLexer.interp",
+    "src/transpiler/logic/parser/grammar/CNextLexer.tokens",
+    "src/transpiler/logic/parser/grammar/CNextLexer.ts",
+    "src/transpiler/logic/parser/grammar/CNextListener.ts",
+    "src/transpiler/logic/parser/grammar/CNextParser.ts",
+    "src/transpiler/logic/parser/grammar/CNextVisitor.ts",
+    "src/transpiler/output/codegen/CodeGenerator.ts",
+    "src/transpiler/output/codegen/generators/statements/ControlFlowGenerator.ts",
+    "tests/control-flow/forever-basic.test.c",
+    "tests/control-flow/forever-basic.test.cpp"
+   ],
+   "n_src": 23,
+   "passes_with_fix": 1
+  },
+  {
+   "pr": 1056,
+   "issue": 850,
+   "title": "fix: emit MISRA 21.6 inline suppression for stdio.h includes",
+   "base": "a5135adef475abbf4e59cfa33538076d90b59d0c",
+   "merge": "89b274e2436b1ab1e375648af50b21a1e9ec824d",
+   "fixture": "tests/misra-suppression/stdio-suppression.test.cnx",
+   "fixture_files": [
+    "tests/misra-suppression/stdio-suppression.expected.c",
+    "tests/misra-suppression/stdio-suppression.expected.cpp",
+    "tests/misra-suppression/stdio-suppression.test.cnx"
+   ],
+   "src": [
+    "docs/misra-compliance.md",
+    "src/transpiler/output/MisraSuppressionUtils.ts",
+    "src/transpiler/output/__tests__/MisraSuppressionUtils.test.ts",
+    "src/transpiler/output/codegen/CodeGenerator.ts",
+    "src/transpiler/output/headers/HeaderGeneratorUtils.ts",
+    "tests/basics/hello-world.test.c",
+    "tests/basics/hello-world.test.cpp",
+    "tests/c-interop/include-passthrough.test.c",
+    "tests/c-interop/include-passthrough.test.cpp",
+    "tests/forward-declarations/stdlib-with-include-valid.test.c",
+    "tests/forward-declarations/stdlib-with-include-valid.test.cpp",
+    "tests/functions/main-with-args.test.c",
+    "tests/functions/main-with-args.test.cpp",
+    "tests/include/include-cnx-mixed.test.c",
+    "tests/include/include-cnx-mixed.test.cpp",
+    "tests/misra-suppression/stdio-suppression.test.c",
+    "tests/misra-suppression/stdio-suppression.test.cpp"
+   ],
+   "n_src": 17,
+   "passes_with_fix": 1
+  },
+  {
+   "pr": 1051,
+   "issue": 1048,
+   "title": "fix: modernize rotted example .cnx files + guard them in CI (#1048)",
+   "base": "b90b99f965d775eac044834448d322a09a612549",
+   "merge": "13682097a556a98beac3016341a5224d40030c99",
+   "fixture": "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.test.cnx",
+   "fixture_files": [
+    "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.expected.c",
+    "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.expected.cpp",
+    "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.expected.h",
+    "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.expected.hpp",
+    "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.test.cnx"
+   ],
+   "src": [
+    "CLAUDE.md",
+    "examples/bit_test.cnx",
+    "examples/nucleo-f446re/blink.cnx",
+    "examples/references.cnx",
+    "examples/uart_buffer.cnx",
+    "scripts/__tests__/examples-transpile.test.ts",
+    "src/transpiler/output/codegen/assignment/AssignmentClassifier.ts",
+    "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.test.c",
+    "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.test.cpp",
+    "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.test.h",
+    "tests/bugs/issue-1052-cross-scope-register-bitrange/cross-scope-bitrange.test.hpp"
+   ],
+   "n_src": 11,
+   "passes_with_fix": 1
+  },
+  {
+   "pr": 1046,
+   "issue": 1037,
+   "title": "fix: consistent indentation in string init/concat/substring codegen (#1037)",
+   "base": "d2ca1f06c322bc7c4d3d8e47b753b294556b1df6",
+   "merge": "c5ffdd7f75e03aaf4eb56ce75d201c7f3497c294",
+   "fixture": "tests/bugs/issue-1037-string-init-indentation/nested-block-indentation.test.cnx",
+   "fixture_files": [
+    "tests/bugs/issue-1037-string-init-indentation/nested-block-indentation.expected.c",
+    "tests/bugs/issue-1037-string-init-indentation/nested-block-indentation.expected.cpp",
+    "tests/bugs/issue-1037-string-init-indentation/nested-block-indentation.test.cnx"
+   ],
+   "src": [
+    "src/transpiler/output/codegen/helpers/StringDeclHelper.ts",
+    "src/transpiler/output/codegen/helpers/__tests__/StringDeclHelper.test.ts",
+    "tests/bugs/issue-1037-string-init-indentation/nested-block-indentation.test.c",
+    "tests/bugs/issue-1037-string-init-indentation/nested-block-indentation.test.cpp",
+    "tests/bugs/issue-1044-string-init-strcpy/string-init-bounded-copy.test.c",
+    "tests/bugs/issue-1044-string-init-strcpy/string-init-bounded-copy.test.cpp",
+    "tests/string/string-assignment-exec.test.c",
+    "tests/string/string-assignment-exec.test.cpp",
+    "tests/string/string-boundary-capacity.test.c",
+    "tests/string/string-boundary-capacity.test.cpp",
+    "tests/string/string-concat-basic.test.c",
+    "tests/string/string-concat-basic.test.cpp",
+    "tests/string/string-concat-exec.test.c",
+    "tests/string/string-concat-exec.test.cpp",
+    "tests/string/string-concat-literal.test.c"
+   ],
+   "n_src": 15,
+   "passes_with_fix": 1
+  },
+  {
+   "pr": 1045,
+   "issue": 1044,
+   "title": "fix: use bounded strncpy for string init from variable (#1044)",
+   "base": "5534f9e545bc0df8cc9728142bd677f0b6043f30",
+   "merge": "d2ca1f06c322bc7c4d3d8e47b753b294556b1df6",
+   "fixture": "tests/bugs/issue-1044-string-init-strcpy/string-init-bounded-copy.test.cnx",
+   "fixture_files": [
+    "tests/bugs/issue-1044-string-init-strcpy/string-init-bounded-copy.expected.c",
+    "tests/bugs/issue-1044-string-init-strcpy/string-init-bounded-copy.expected.cpp",
+    "tests/bugs/issue-1044-string-init-strcpy/string-init-bounded-copy.test.cnx"
+   ],
+   "src": [
+    "src/transpiler/output/codegen/helpers/StringDeclHelper.ts",
+    "src/transpiler/output/codegen/helpers/__tests__/StringDeclHelper.test.ts",
+    "tests/bugs/issue-1044-string-init-strcpy/string-init-bounded-copy.test.c",
+    "tests/bugs/issue-1044-string-init-strcpy/string-init-bounded-copy.test.cpp",
+    "tests/string/string-assignment-exec.test.c",
+    "tests/string/string-assignment-exec.test.cpp"
+   ],
+   "n_src": 6,
+   "passes_with_fix": 1
+  },
+  {
+   "pr": 1039,
+   "issue": 1038,
+   "title": "fix: support scoped type arrays in struct fields",
+   "base": "1baed520d250ea1914595ff26eef2a8a4b7c3e64",
+   "merge": "9c38284833d9a4863721a2b7fe9592cda7d11616",
+   "fixture": "tests/header-generation/scoped-type-array.test.cnx",
+   "fixture_files": [
+    "tests/header-generation/scoped-type-array.expected.c",
+    "tests/header-generation/scoped-type-array.expected.cpp",
+    "tests/header-generation/scoped-type-array.expected.h",
+    "tests/header-generation/scoped-type-array.expected.hpp",
+    "tests/header-generation/scoped-type-array.test.cnx"
+   ],
+   "src": [
+    "grammar/CNext.g4",
+    "src/transpiler/logic/parser/grammar/CNext.interp",
+    "src/transpiler/logic/parser/grammar/CNextParser.ts",
+    "src/transpiler/logic/symbols/cnext/utils/TypeUtils.ts",
+    "src/transpiler/output/codegen/helpers/TypeGenerationHelper.ts",
+    "tests/header-generation/scoped-type-array.test.c",
+    "tests/header-generation/scoped-type-array.test.cpp",
+    "tests/header-generation/scoped-type-array.test.h",
+    "tests/header-generation/scoped-type-array.test.hpp"
+   ],
+   "n_src": 9,
+   "passes_with_fix": 1
+  },
+  {
+   "pr": 1034,
+   "issue": 1029,
+   "title": "fix: .element_count property on string arrays in code generation (Closes #1029)",
+   "base": "5bc4ac2bad0c8e410e3125c0d54503392d7d05aa",
+   "merge": "63ccfd47afb8288731443051528ca8212268c877",
+   "fixture": "tests/string/string-array-element-count.test.cnx",
+   "fixture_files": [
+    "tests/string/string-array-element-count.expected.c",
+    "tests/string/string-array-element-count.expected.cpp",
+    "tests/string/string-array-element-count.test.cnx",
+    "tests/string/string-in-control-flow.expected.c",
+    "tests/string/string-in-control-flow.expected.cpp"
+   ],
+   "src": [
+    "src/transpiler/output/codegen/helpers/StringDeclHelper.ts",
+    "src/transpiler/output/codegen/helpers/TypeRegistrationEngine.ts",
+    "src/transpiler/output/codegen/helpers/__tests__/StringDeclHelper.test.ts",
+    "src/transpiler/output/codegen/helpers/__tests__/TypeRegistrationEngine.test.ts",
+    "tests/string/string-array-element-count.test.c",
+    "tests/string/string-array-element-count.test.cpp",
+    "tests/string/string-in-control-flow.test.c",
+    "tests/string/string-in-control-flow.test.cpp"
+   ],
+   "n_src": 8,
+   "passes_with_fix": 1
+  },
+  {
+   "pr": 1025,
+   "issue": 1019,
+   "title": "fix: scope-member string init and use-before-init (issue #1019)",
+   "base": "d1bea010f2d4c8b6f0fe836cdaf64c6f6071a987",
+   "merge": "94bef9f4a04757d1f58b64f76cf24ee427a4da24",
+   "fixture": "bugs/issue-1019-scope-member-string-init/do-while-init.test.cnx",
+   "fixture_files": [
+    "bugs/issue-1019-scope-member-string-init/do-while-init.expected.c",
+    "bugs/issue-1019-scope-member-string-init/do-while-init.expected.cpp",
+    "bugs/issue-1019-scope-member-string-init/do-while-init.expected.h",
+    "bugs/issue-1019-scope-member-string-init/do-while-init.expected.hpp",
+    "bugs/issue-1019-scope-member-string-init/do-while-init.test.cnx",
+    "bugs/issue-1019-scope-member-string-init/read-before-init.expected.error",
+    "bugs/issue-1019-scope-member-string-init/read-before-init.test.cnx",
+    "bugs/issue-1019-scope-member-string-init/valid-zero-init.expected.c",
+    "bugs/issue-1019-scope-member-string-init/valid-zero-init.expected.cpp",
+    "bugs/issue-1019-scope-member-string-init/valid-zero-init.expected.h",
+    "bugs/issue-1019-scope-member-string-init/valid-zero-init.expected.hpp",
+    "bugs/issue-1019-scope-member-string-init/valid-zero-init.test.cnx"
+   ],
+   "src": [
+    "bugs/issue-1019-scope-member-string-init/do-while-init.test.c",
+    "bugs/issue-1019-scope-member-string-init/do-while-init.test.cpp",
+    "bugs/issue-1019-scope-member-string-init/do-while-init.test.h",
+    "bugs/issue-1019-scope-member-string-init/do-while-init.test.hpp",
+    "bugs/issue-1019-scope-member-string-init/valid-zero-init.test.c",
+    "bugs/issue-1019-scope-member-string-init/valid-zero-init.test.cpp",
+    "bugs/issue-1019-scope-member-string-init/valid-zero-init.test.h",
+    "bugs/issue-1019-scope-member-string-init/valid-zero-init.test.hpp",
+    "src/transpiler/logic/analysis/InitializationAnalyzer.ts",
+    "src/transpiler/logic/analysis/__tests__/InitializationAnalyzer.test.ts",
+    "src/transpiler/output/codegen/CodeGenerator.ts"
+   ],
+   "n_src": 11,
+   "passes_with_fix": 1
+  },
+  {
+   "pr": 1022,
+   "issue": 1012,
+   "title": "fix(E0381): extend use-before-init check to compound assignment",
+   "base": "ec15e629c5ac910c1921f46d11e1ed9323be8ad9",
+   "merge": "d1bea010f2d4c8b6f0fe836cdaf64c6f6071a987",
+   "fixture": "tests/initialization/compound-assign-all-ops.test.cnx",
+   "fixture_files": [
+    "tests/initialization/compound-assign-all-ops.expected.error",
+    "tests/initialization/compound-assign-all-ops.test.cnx",
+    "tests/initialization/compound-assign-initialized.expected.c",
+    "tests/initialization/compound-assign-initialized.expected.cpp",
+    "tests/initialization/compound-assign-initialized.expected.h",
+    "tests/initialization/compound-assign-initialized.expected.hpp",
+    "tests/initialization/compound-assign-initialized.test.cnx",
+    "tests/initialization/compound-assign-struct-field.expected.error",
+    "tests/initialization/compound-assign-struct-field.test.cnx",
+    "tests/initialization/compound-assign-use-before-init.expected.error",
+    "tests/initialization/compound-assign-use-before-init.test.cnx"
+   ],
+   "src": [
+    "src/transpiler/logic/analysis/InitializationAnalyzer.ts",
+    "src/transpiler/logic/analysis/__tests__/InitializationAnalyzer.test.ts",
+    "tests/initialization/compound-assign-initialized.test.c",
+    "tests/initialization/compound-assign-initialized.test.cpp",
+    "tests/initialization/compound-assign-initialized.test.h",
+    "tests/initialization/compound-assign-initialized.test.hpp"
+   ],
+   "n_src": 6,
+   "passes_with_fix": 1
+  }
+ ],
+ "rejected": [
+  {
+   "pr": 1138,
+   "issue": 1130,
+   "title": "fix(codegen): qualify bare scope-local type names in generated C output (ADR-057, #1130)",
+   "base": "056e1ba0a05adff8b3aae79c93c7498c7e04d499",
+   "merge": "e1f6bb8749027d5bd34961b49da2739408b25f0c",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1136,
+   "issue": 1134,
+   "title": "fix(naming): reserve the cnx_ prefix and key include identity on path",
+   "base": "2e2317b05018af6c444e3c2dd9cb6eb7d021c292",
+   "merge": "056e1ba0a05adff8b3aae79c93c7498c7e04d499",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1119,
+   "issue": 1117,
+   "title": "fix(codegen)!: make scope-qualified names injective \u2014 `__` separator + E0201 (fixes #1117)",
+   "base": "078686bf0639884370c680f4dc3e020a18b08c80",
+   "merge": "1733ba705d9a3b448b43ddece53fe11607c1566c",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1111,
+   "issue": 1106,
+   "title": "fix(codegen): reject over-indexing a scalar/array base (#1106)",
+   "base": "8f7a33e138f4be8d3016c81284428e395d1d02b6",
+   "merge": "764bb3b6b99b72358d724aa10f443c97d8aa8640",
+   "why": "known-good fix does not make it pass (1 failing)"
+  },
+  {
+   "pr": 1110,
+   "issue": 1108,
+   "title": "fix(codegen): dedup system #include directives (#1108)",
+   "base": "b769ad18463b106c5ca8f6840fbfe910fc2717df",
+   "merge": "8f7a33e138f4be8d3016c81284428e395d1d02b6",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1085,
+   "issue": 1081,
+   "title": "fix: MISRA C:2012 slice-assignment essential-type compliance \u2014 21.15 unroll, 10.8 composite sources, 10.4 enforcement (#1081, #1091)",
+   "base": "32dcae620fe84e0d4f87b1a44cb8afc76ac608e4",
+   "merge": "b3f0275d8b069ea2f4e203d9e19195e5d773b55c",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1079,
+   "issue": 1075,
+   "title": "feat: forbid disguised infinite loops (E0707, ADR-113 / #1075)",
+   "base": "7fc4e81720ccde75caaa8ef2b62194c42d7625b3",
+   "merge": "0d2d35b38cf042874824c1a8d0783de6e00e8c01",
+   "why": "known-good fix does not make it pass (1 failing)"
+  },
+  {
+   "pr": 1073,
+   "issue": 1057,
+   "title": "fix: make validate:c MISRA check actually detect violations (#1057)",
+   "base": "086ea98fce37eb6ca5f83c355328c41a86ec2ad9",
+   "merge": "f04a84a5d6b5a132256a2525c88141f6d77044cf",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1058,
+   "issue": 848,
+   "title": "test: regression guard for MISRA 14.4 boolean conditions (#848)",
+   "base": "89b274e2436b1ab1e375648af50b21a1e9ec824d",
+   "merge": "d848d511983e6d6c436f6e347f274aadb98542b8",
+   "why": "fixture PASSES on the buggy base -- does not capture the bug"
+  },
+  {
+   "pr": 1049,
+   "issue": 1040,
+   "title": "feat: all-paths-return diagnostic E0704 (#1040, ADR-112)",
+   "base": "e68b65df23381123ba6a10838f3943f24ca86231",
+   "merge": "497a5bf3aeee6e37f04d463ac27711fba73f4c02",
+   "why": "known-good fix does not make it pass (1 failing)"
+  },
+  {
+   "pr": 1047,
+   "issue": 1018,
+   "title": "fix: remove execute-only test mode; full pipeline in one pass (#1018)",
+   "base": "c5ffdd7f75e03aaf4eb56ce75d201c7f3497c294",
+   "merge": "e68b65df23381123ba6a10838f3943f24ca86231",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1043,
+   "issue": 1042,
+   "title": "fix: reject bare booleans in conditions consistently (#1042)",
+   "base": "5081281214eb9906263ddeb9c3657134d209db26",
+   "merge": "5534f9e545bc0df8cc9728142bd677f0b6043f30",
+   "why": "known-good fix does not make it pass (1 failing)"
+  },
+  {
+   "pr": 1035,
+   "issue": 1030,
+   "title": "fix: generate strcpy for string variable initialization (#1030)",
+   "base": "63ccfd47afb8288731443051528ca8212268c877",
+   "merge": "1baed520d250ea1914595ff26eef2a8a4b7c3e64",
+   "why": "known-good fix does not make it pass (1 failing)"
+  },
+  {
+   "pr": 1033,
+   "issue": 1014,
+   "title": "fix(#1014): reject C-style multi-dim array declarations",
+   "base": "9c38284833d9a4863721a2b7fe9592cda7d11616",
+   "merge": "6945fa0089c02feed59618c42e6575d85733f1a6",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1031,
+   "issue": 1028,
+   "title": "test: add guard for stale artifacts in test-error cases",
+   "base": "9b59dd9ed711753c14e3c857b7a8b8bfba2a85ee",
+   "merge": "5bc4ac2bad0c8e410e3125c0d54503392d7d05aa",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1026,
+   "issue": 1010,
+   "title": "fix(E0800): detect float division by literal zero",
+   "base": "d1bea010f2d4c8b6f0fe836cdaf64c6f6071a987",
+   "merge": "920c2043dbced1d86f4213160c5fc7f5ae30208e",
+   "why": "could not apply source changes"
+  },
+  {
+   "pr": 1024,
+   "issue": 1011,
+   "title": "fix(#1011): reject break/continue - not part of C-Next spec",
+   "base": "23217d3f714fcc27d0e955ec5dd7828f04bc9303",
+   "merge": "9b59dd9ed711753c14e3c857b7a8b8bfba2a85ee",
+   "why": "could not apply source changes"
+  },
+  {
+   "pr": 1023,
+   "issue": 1006,
+   "title": "fix: add test-link marker for issue-986 helper file",
+   "base": "ec15e629c5ac910c1921f46d11e1ed9323be8ad9",
+   "merge": "23217d3f714fcc27d0e955ec5dd7828f04bc9303",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1021,
+   "issue": 1005,
+   "title": "fix: update switch-array-element test to use prefix array syntax",
+   "base": "ec15e629c5ac910c1921f46d11e1ed9323be8ad9",
+   "merge": "40c19385e188924ecba0bf535cd962b49c12bcab",
+   "why": "adds no .test.cnx fixture"
+  },
+  {
+   "pr": 1020,
+   "issue": 929,
+   "title": "ci: add automated regression testing for bugs/ directory",
+   "base": "23217d3f714fcc27d0e955ec5dd7828f04bc9303",
+   "merge": "3e776f743a7cc85249f337cbd69c50ee89debe87",
+   "why": "adds no .test.cnx fixture"
+  }
+ ]
+}
