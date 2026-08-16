@@ -6,7 +6,7 @@ what came back, and every assumption that turned out to be wrong — the origina
 document's and my own.
 
 Machine: `gx10-52c8` (GB10, cc 12.1, 121 GB). llama.cpp pinned at `687e778`.
-Verification run 2026-08-12. Raw logs in `data/`, harness in `tools/`.
+Verification run 2026-08-12. Raw logs and harness in `/home/linux/verify/`.
 
 ---
 
@@ -61,6 +61,8 @@ a discriminating outcome written down *before* the test ran.
 | An equality gate validates an ablation | Only when the paths *should* be identical. For MXFP4 they legitimately differ (4-bit vs 8-bit activations), so equality flagged a valid ablation as broken. Compare against a **control** that must not change |
 | A published capture set stays what you analysed | `dump-proxy.py` reset its counter on restart and overwrote eight captures in place with an unrelated session. Invisible until token counts stopped matching — after publication |
 | The checkpoint interval is the configured constant | It is the *realised spacing*. Reading `interval 10000` aligned to 2048 gave 10,240; measurement gave 20,189. Retracted |
+| A short context detects rope corruption "just as cleanly" | It detects a *change*, not the *harm*. At 2048 the flag helps 3.5%; at 131,072 it is 34x worse. A cheaper test moved the experiment out of the regime the claim was about |
+| ~227 GB/s is a machine constant | It is Qwen's achieved throughput. gpt-oss gives 143 GB/s on the same box — a 55% spread — because MXFP4 pays dequant per byte and the residual lands in the "bandwidth" term |
 
 ---
 
@@ -340,7 +342,38 @@ gpt-oss MXFP4 **50.21 t/s** vs Qwen Q8_0 **63.34 t/s** at matched shallow depth.
 Predicted 1.21x in gpt-oss's favour; measured **0.79x**. Effective bandwidth
 143 GB/s vs 221. Decode has no native FP4 path, so MXFP4 pays dequant per byte.
 
-### V9.2 — do rope flags apply inside the training window? ✅ / corruption ❌
+### V9.2-long — rope corruption AT the ceiling ✅ **confirmed, 34x**
+
+> **Registered:** if #9 is right, arm B degrades substantially at 131,072. If it
+> does not, the corruption claim is unsupported at any testable context.
+
+| arm | PPL at 131,072 |
+|---|---:|
+| vendor config | **2.7940 +/- 0.02197** |
+| `--rope-scale 2` | **94.4541 +/- 1.17464** |
+
+**34x degradation** — a model emitting near-noise, with no error and no log line.
+
+**This corrects an error I made in test design.** I had argued that
+`--rope-scale 2` rescales every position, so a 2048-token context would detect it
+"just as cleanly", and used that to justify a cheaper test. It detects *a change*
+but not the *harm*:
+
+| context | no flags | rope-scale 2 | effect |
+|---:|---:|---:|---|
+| 2,048 | 4.7195 | 4.5520 | 3.5% **better** |
+| 131,072 | 2.7940 | **94.4541** | **34x worse** |
+
+At 2048 the flag maps positions into 0-1023, deep inside trained range. At the
+ceiling it halves angular spacing across the whole operating range. Had I stopped
+at the short-context result, #9 would have been recorded as "corruption not
+supported" on the strength of a test that structurally could not see it.
+
+Generalises: **a null result only counts if the test could have produced a
+positive one.** Cheapening an experiment can silently move it out of the regime
+the claim is about.
+
+### V9.2-short — do rope flags apply inside the training window? ✅
 
 | arm | PPL |
 |---|---:|

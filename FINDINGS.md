@@ -474,7 +474,7 @@ does not. **Cross-model rows are indicative; same-model rows are evidence.**
 
 ## 9. gpt-oss-120b cannot be stretched past 131k
 
-**[verified — the code behaviour]** · **[unverified — the magnitude]**
+**[verified — code behaviour and magnitude]**
 
 Upstream config:
 
@@ -504,42 +504,40 @@ disabled automatically under sliding-window attention (logged, easy to miss).
 **The generalisable rule: run at the vendor's declared
 `max_position_embeddings` and never pass rope flags yourself.**
 
-### Measured: the flags are applied, but "corruption" is not supported
+### Measured: the corruption is real, and severe [verified]
 
-**[verified — the flags apply]** · **[refuted at short context — the corruption]**
-
-gpt-oss-120b MXFP4, identical 16-chunk corpus, `-c 2048` (well inside the
-131,072 training window), the rope flag as the only variable:
+gpt-oss-120b MXFP4, one chunk at the model's full **131,072** context, the rope
+flag as the only variable:
 
 | arm | PPL |
 |---|---:|
-| no rope flags | **4.7195 ± 0.08943** |
-| `--rope-scaling yarn --rope-scale 2` | **4.5520 ± 0.08650** |
+| vendor config, no rope flags | **2.7940 ± 0.02197** |
+| `--rope-scaling yarn --rope-scale 2` | **94.4541 ± 1.17464** |
 
-Perplexity here is **bit-exact deterministic** — rerunning the reference arm
-reproduced `4.7195 +/- 0.08943` to four decimals. So the difference is caused
-entirely by the flag, with no sampling uncertainty: **the rope parameters are
-applied even when the requested context sits inside the training window.** The
-mechanism in the code trace above is confirmed behaviourally.
+**A 34× degradation.** Perplexity 94 is a model emitting near-noise. Passing rope
+flags on top of a config that already carries YaRN does not merely "get worse" —
+it destroys the model's output, silently, while the server reports healthy.
 
-**But the output does not degrade — it marginally improves** (4.5520 vs 4.7195,
-3.5% lower). At 2048 context, `--rope-scale 2` maps positions 0–2047 onto
-0–1023, which stays well inside trained range; nothing is extrapolated, so there
-is nothing to corrupt.
+**The corruption is invisible at short context.** The same comparison at 2048:
 
-⚠️ **The corruption claim remains untested where it would actually bite** — long
-positions near the stretched ceiling. That needs a ~131k-token corpus and has not
-been run.
+| context | no flags | `--rope-scale 2` | effect |
+|---:|---:|---:|---|
+| 2,048 | 4.7195 | 4.5520 | 3.5% *better* |
+| 131,072 | 2.7940 | **94.4541** | **34× worse** |
 
-**One narrowing:** the capping is `llama-server`-specific
+At 2048 the flag maps positions 0–2047 onto 0–1023, deep inside trained range —
+harmless, even marginally helpful. At 131,072 it maps them onto 0–65,535, halving
+the angular spacing across the whole operating range, and the encoding collapses.
+Perplexity here is bit-exact deterministic, so both numbers are the flag's doing
+and nothing else.
+
+**Anyone testing this at a convenient short context will conclude the flags are
+harmless.** They are not. The test has to run at the ceiling.
+
+**One narrowing on the capping half:** it is `llama-server`-specific
 (`server-context.cpp:1311-1313`). `llama-perplexity` at `-c 262144` only warns —
 `n_ctx_seq (262144) > n_ctx_train (131072) -- possible training context overflow`
-— and proceeds at the requested size. The trap as described applies to the server,
-not to every llama.cpp tool.
-
-**The operational rule still stands on prudence** — run at the vendor's declared
-`max_position_embeddings` and do not pass rope flags — but its stated
-justification is not yet demonstrated.
+— and proceeds at the requested size.
 
 ### On rope scaling generally
 
@@ -1001,10 +999,10 @@ Server and build scripts live in `/home/linux`: `build-llamacpp.sh`,
 `dsv4-server.sh`, `qwen-server.sh`, `gptoss-server.sh`, `install-*.sh`,
 `cleanup-models.sh`.
 
-Verification harness, per-test results and raw logs live in `tools/`, `results/` and `data/`.
+Verification harness, per-test results and raw logs live in `/home/linux/verify`.
 Methodology, falsified assumptions and the full test log are in
 `NOTES.md`. The pre-verification version of this document is preserved
-as `results/FINDINGS.original-pre-verification.md`.
+as `spark-cc-finding.ORIGINAL-20260812.md`.
 
 ⚠️ `build-llamacpp.sh` runs `git pull --ff-only`. Every number here is on commit
 `687e778`; running that script moves the checkout and invalidates comparability.
