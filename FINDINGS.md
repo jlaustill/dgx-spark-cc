@@ -442,13 +442,31 @@ the default ubatch.
 **The harness transfers to production.** A same-depth, same-ubatch check against
 live `llama-server` agreed closely.
 
-⚠️ **The originally quoted agreement — 349.63 predicted vs 349.69 observed — is
-luck, and now demonstrably so.** The same `pp4096 ub512` row measured across four
-independent process launches spans **4.3%** (1795.72 / 1800.58 / 1859.99 /
-1872.78), while `llama-bench`'s own reported ± within a single run is only
-0.1–0.7%. **The harness understates its own variance by 4–6×.** Agreement to four
-significant figures is ~200× tighter than the instrument can resolve — and it was
-measured at *different* depths (65,536 vs 62,903) besides.
+**Measured against production [verified].** Same model, same settings
+(262k ctx, `ub 2048`, q8_0 KV):
+
+| | t/s |
+|---|---:|
+| `llama-bench` pp131072 | **271.49 ± 0.27** |
+| production, 138,595 tok | 263.0 |
+| production, 142,981 tok | 259.2 |
+| production, 149,679 tok | 253.5 |
+| production, 150,072 tok | 253.2 |
+
+At the closest comparable depth that is a **3.2% gap**, with production slightly
+slower — as expected, since it is deeper *and* pays real HTTP, jinja templating
+and tokenisation. Every production point sits 3–7% under the bench figure,
+decreasing monotonically with depth. `llama-bench pp65536 = 350.31` also
+reproduces the published 350 t/s almost exactly.
+
+**So the claim transfers; the precision does not.** The originally quoted
+agreement — 349.63 predicted vs 349.69 observed — is coincidence. The same
+`pp4096 ub512` row across four independent process launches spans **4.3%**
+(1795.72 / 1800.58 / 1859.99 / 1872.78) while `llama-bench`'s own reported ±
+within a run is 0.1–0.7%: **the harness understates its own variance by 4–6×**.
+Four-significant-figure agreement is ~200× tighter than the instrument can
+resolve, and it was measured at *different* depths (65,536 vs 62,903) besides.
+The honest statement is "within a few percent, bench slightly optimistic".
 
 **Practical rule: treat any bench difference under ~5% as noise**, quote the
 between-launch spread rather than `llama-bench`'s ±, and interleave arms

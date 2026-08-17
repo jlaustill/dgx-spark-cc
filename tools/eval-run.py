@@ -93,25 +93,53 @@ output must be valid C, not merely match a string.
 """
 
 
-def attempt(task, server, model, timeout):
-    """Run Claude Code against the local server. -> (seconds, transcript tail)."""
+def server_counters(log="/home/linux/verify/arm-stock.log"):
+    """(turns, prefill_tokens) so far, read from the server's own log.
+
+    Turns and prefill are the two things that make an A/B across templates fair.
+    Bounding by wall-clock alone would hand the patched arm more turns for the
+    same budget -- it is ~59x cheaper per diverging turn -- and then a quality
+    difference could not be separated from simply having had more attempts.
+    """
+    try:
+        txt = open(log, errors="replace").read()
+    except OSError:
+        return 0, 0
+    turns = txt.count("launch_slot_")
+    pre = sum(int(m) for m in re.findall(r"prompt eval time =\s*[\d.]+ ms /\s*(\d+) tokens", txt))
+    return turns, pre
+
+
+def attempt(task, server, model, timeout, log):
+    """Run Claude Code against the local server. -> dict of what happened."""
     txt = issue_text(task["issue"])
     if not txt:
         return 0, "could not fetch issue"
     prompt = PROMPT.format(issue=txt[:6000], fixture=task["fixture"])
     t0 = time.time()
-    r = sh("claude", "-p", prompt,
-           "--dangerously-skip-permissions",
-           "--model", model,
-           timeout=timeout,
-           env={"ANTHROPIC_BASE_URL": server,
-                "ANTHROPIC_API_KEY": "local",
-                "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-                # The local server's real window; without this Claude Code assumes
-                # 200k and compacts a conversation that never needed compacting.
-                "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "262144",
-                "API_TIMEOUT_MS": "300000"})
-    return time.time() - t0, (r.stdout + r.stderr)[-3000:]
+    t_before, p_before = server_counters(log)
+    timed_out = False
+    try:
+        r = sh("claude", "-p", prompt,
+               "--dangerously-skip-permissions",
+               "--model", model,
+               timeout=timeout,
+               env={"ANTHROPIC_BASE_URL": server,
+                    "ANTHROPIC_API_KEY": "local",
+                    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+                    # The server's real window; without this Claude Code assumes
+                    # 200k and compacts a conversation that never needed it.
+                    "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "262144",
+                    "API_TIMEOUT_MS": "300000"})
+        tail = (r.stdout + r.stderr)[-3000:]
+    except subprocess.TimeoutExpired:
+        # A timeout is a result, not a crash. Recording it keeps the run going and
+        # preserves how far the model got.
+        timed_out = True
+        tail = "TIMED OUT"
+    t_after, p_after = server_counters(log)
+    return {"seconds": time.time() - t0, "timed_out": timed_out, "tail": tail,
+            "turns": t_after - t_before, "prefill_tokens": p_after - p_before}
 
 
 def main():
@@ -120,7 +148,9 @@ def main():
     ap.add_argument("--server", default="http://127.0.0.1:8003")
     ap.add_argument("--model", default="deepseek-v4-flash")
     ap.add_argument("--set", default="/home/linux/verify/eval-set.json")
-    ap.add_argument("--timeout", type=int, default=3600)
+    ap.add_argument("--timeout", type=int, default=5400)
+    ap.add_argument("--log", default="/home/linux/verify/arm-stock.log",
+                    help="server log, for turn and prefill accounting")
     ap.add_argument("--only", help="comma-separated issue numbers")
     ap.add_argument("--compare", nargs=2, metavar=("A", "B"))
     a = ap.parse_args()
@@ -168,18 +198,20 @@ def main():
             clean(); continue
         print(f"  baseline: fails as expected", flush=True)
 
-        secs, tail = attempt(t, a.server, a.model, a.timeout)
+        att = attempt(t, a.server, a.model, a.timeout, a.log)
         changed = sh("git", "status", "--porcelain").stdout.strip().splitlines()
         edited = [l for l in changed if not any(f in l for f in t["fixture_files"])]
-        print(f"  model ran {secs/60:.1f} min, touched {len(edited)} file(s)", flush=True)
+        print(f"  {att['seconds']/60:.1f} min, {att['turns']} turns, "
+              f"{att['prefill_tokens']:,} prefill tok, {len(edited)} file(s) edited"
+              f"{' [TIMEOUT]' if att['timed_out'] else ''}", flush=True)
 
         ran, passed, failed, out = run_fixture(t["fixture"])
         solved = bool(ran and failed == 0 and passed > 0)
         print(f"  {'SOLVED' if solved else 'not solved'}"
               f" (ran={ran} passed={passed} failed={failed})", flush=True)
-        results.append({**t, "solved": solved, "seconds": secs,
-                        "files_edited": len(edited), "tail": tail[-1500:],
-                        "fixture_out": out[-800:]})
+        results.append({**t, "solved": solved, **att,
+                        "files_edited": len(edited),
+                        "tail": att["tail"][-1500:], "fixture_out": out[-800:]})
         clean()
         with open(f"{OUT}/{a.tag}.json", "w") as f:
             json.dump(results, f, indent=1)

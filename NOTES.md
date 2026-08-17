@@ -466,6 +466,57 @@ What remains untested is generality across *output styles*: the capture used
 "learning" mode with a 35 KB SessionStart hook, so the head is unusually large.
 Generality across *templates* is now established, and it is narrow.
 
+### V8.1 — does llama-bench transfer to production? ✅ **claim yes, precision no**
+
+| | t/s |
+|---|---:|
+| `llama-bench` pp131072 | **271.49 +/- 0.27** |
+| production, 138,595 tok | 263.0 |
+| production, 142,981 tok | 259.2 |
+| production, 149,679 tok | 253.5 |
+| production, 150,072 tok | 253.2 |
+
+3.2% at the closest comparable depth, production slightly slower as expected --
+it is deeper *and* pays HTTP, jinja templating and tokenisation. All production
+points sit 3-7% under, decreasing monotonically. `pp65536 = 350.31` reproduces
+the published 350 almost exactly.
+
+The document's "349.63 predicted vs 349.69 observed" is coincidence: 0.02%
+agreement against a measured 4.3% between-launch noise floor, at *different*
+depths besides. The honest statement is "within a few percent, bench slightly
+optimistic".
+
+**Timing note that corrects earlier estimates in this verification:**
+`llama-bench` runs a warmup pass per test *on top of* `-r N`, so wall-clock per
+row is 1.5x what the repetition count implies. The V8.1 run was
+`3 x 65,536 + 3 x 131,072 = 589,824` tokens ~= 39 min, not the 27 I predicted.
+
+### E4 smoke test — #15's cost, confirmed inside a live agentic loop ⚠️
+
+The first eval task (issue #1038, a 9-file parser+codegen fix) ran 40 minutes on
+the **stock** template and produced **zero source edits** across 21 turns. The
+server log shows why:
+
+```
+task 6915 | prompt eval time = 167105.51 ms / 59,472 tokens
+task 8348 | prompt eval time =  73439.04 ms / 29,349 tokens
+```
+
+Those are full re-reads mid-session -- one turn spending **167 seconds**
+re-prefilling context it already had. Decode was healthy at ~15 t/s; the loop was
+drowning in redundant prefill.
+
+**This is stronger evidence for #15 than the replay.** V15.1/V15.2 measured
+captured request bodies played back; this is the pathology occurring during real
+agentic work, on a task nobody constructed for the purpose.
+
+It also forced a design constraint on the A/B. This build of Claude Code has no
+`--max-turns`, so bounding by wall-clock would hand the patched arm more turns for
+the same budget -- it is ~59x cheaper per diverging turn -- and a quality
+difference could not then be separated from simply having had more attempts. Both
+arms therefore get a timeout long enough that turns are not binding, and every
+task records turns and prefill so a binding timeout is visible rather than silent.
+
 ### V13.3 — how much of V4 could take the MXFP4 path? ✅
 
 Read from the actual GGUF tensor list across all four shards:

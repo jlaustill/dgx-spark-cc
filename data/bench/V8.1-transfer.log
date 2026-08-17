@@ -1,0 +1,13 @@
+=== V8.1: does llama-bench transfer to production? ===
+production (V15.2 replay, 262k ctx, ub2048, q8_0 KV):
+  138,595 tok / 526.9s = 263.0 t/s
+  142,981 tok / 551.6s = 259.2 t/s
+  149,679 tok / 590.4s = 253.5 t/s
+  150,072 tok / 592.8s = 253.2 t/s
+
+llama-bench, same model and settings:
+| model                          |       size |     params | backend    | ngl | n_ubatch | type_k | type_v |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | --: | -------: | -----: | -----: | --: | --------------: | -------------------: |
+| deepseek4 ?B IQ3_XXS - 3.0625 bpw |  95.92 GiB |   284.33 B | CUDA       |  99 |     2048 |   q8_0 |   q8_0 |   1 |         pp65536 |        350.31 ± 2.93 |
+| deepseek4 ?B IQ3_XXS - 3.0625 bpw |  95.92 GiB |   284.33 B | CUDA       |  99 |     2048 |   q8_0 |   q8_0 |   1 |        pp131072 |        271.49 ± 0.27 |
+=== V8.1 DONE ===
