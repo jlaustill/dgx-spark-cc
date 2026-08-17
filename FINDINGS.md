@@ -127,7 +127,7 @@ legitimate on its own — and only appears when you sum a whole session.
 
 ## 1. A default that silently disables the disk KV cache
 
-**[verified — the default]** · **[unverified — the 1000×]**
+**[verified — the default]** · **[corrected — the 1000× is 9.6×]**
 
 `ds4-server` (antirez's DwarfStar engine) can persist KV checkpoints to disk, but
 two things must both be true and only one is obvious:
@@ -365,7 +365,7 @@ reduces it further. The standard `2 × layers × heads × dim × 2` formula give
 context far more than parameter count does** — that conclusion survives, and it is
 what makes V4's 1M context possible at all.
 
-## 7. MXFP4 is the only quant with hardware acceleration on GB10 — **on prefill**
+## 7. MXFP4 is the only quant with hardware acceleration on GB10 — on prefill only, and not for free
 
 **[corrected — the original did not bound the scope]**
 
@@ -672,9 +672,9 @@ KV fits in 7 GiB (#6) *and* why positions are block-derived and cannot be shifte
 **The architectural feature that buys the context is the feature that blocks the
 cache repair.**
 
-## 12. `--ubatch-size 2048` buys 19–30% of prefill, free
+## 12. `--ubatch-size 2048` buys 19–30% of prefill, and 2048 is the optimum
 
-**[verified — reproduced]**
+**[verified — reproduced, and 2048 confirmed optimal]** · **[unverified — the memory margin]**
 
 `n_ubatch` defaults to 512, which caps arithmetic intensity: each micro-batch
 re-reads weights that could have been amortised over more tokens.
@@ -699,9 +699,9 @@ resident to **112 of 121 GB**. It loads and runs, but the margin is thin —
 ⚠️ 2048 is the largest value tried, not a demonstrated optimum, and "free" is
 true only if the memory margin survives a worst-case request (V12.2, V12.3).
 
-## 13. Native FP4 is worth 1.19–1.43× on prefill — but little of it is reachable on V4
+## 13. The native FP4 path is worth 1.16–1.34×, costs 6.4% perplexity, and is largely unreachable on V4
 
-**[verified — the measurement]** · **[open — the causal attribution]**
+**[verified — measurement, attribution and cost]**
 
 **The controlled experiment.** One model (gpt-oss-120b), one harness, one
 architecture, 5.1B active either way. The MXFP4 file was requantised in place to
