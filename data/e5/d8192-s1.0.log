@@ -1,0 +1,10 @@
+0.00.613.550 W load: control-looking token: 128247 '</s>' was not control-type; this is probably a bug in the model. its type will be overridden
+0.15.839.610 I 
+0.15.839.692 I system_info: n_threads = 20 (n_threads_batch = 20) / 20 | CUDA : ARCHS = 1210 | USE_GRAPHS = 1 | BLACKWELL_NATIVE_FP4 = 1 | CPU : NEON = 1 | ARM_FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | 
+0.15.839.703 I perplexity: tokenizing the input ..
+0.16.248.449 I perplexity: tokenization took 408.74 ms
+0.16.248.565 I perplexity: calculating perplexity over 1 chunks, n_ctx=8192, batch_size=2048, n_seq=1
+0.21.848.336 I perplexity: 5.60 seconds per pass - ETA 0.08 minutes
+[1]5.7875,
+0.21.924.938 I Final estimate: PPL = 5.7875 +/- 0.25621
+

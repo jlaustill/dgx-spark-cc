@@ -1,0 +1,38 @@
+0.00.565.635 W load: control-looking token: 128247 '</s>' was not control-type; this is probably a bug in the model. its type will be overridden
+0.04.140.590 I 
+0.04.140.696 I system_info: n_threads = 20 (n_threads_batch = 20) / 20 | CUDA : ARCHS = 1210 | USE_GRAPHS = 1 | BLACKWELL_NATIVE_FP4 = 1 | CPU : NEON = 1 | ARM_FMA = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | 
+0.04.140.709 I perplexity: tokenizing the input ..
+0.04.801.306 I perplexity: tokenization took 660.589 ms
+[New LWP 3723460]
+[New LWP 3723456]
+[New LWP 3723455]
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.ubuntu.com>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/aarch64-linux-gnu/libthread_db.so.1".
+0x0000f5d16e9d7a34 in __GI___wait4 (pid=3723461, stat_loc=0x0, options=0, usage=0x0) at ../sysdeps/unix/sysv/linux/wait4.c:30
+warning: 30	../sysdeps/unix/sysv/linux/wait4.c: No such file or directory
+#0  0x0000f5d16e9d7a34 in __GI___wait4 (pid=3723461, stat_loc=0x0, options=0, usage=0x0) at ../sysdeps/unix/sysv/linux/wait4.c:30
+30	in ../sysdeps/unix/sysv/linux/wait4.c
+#1  0x0000f5d16e0c8eac in ggml_print_backtrace () from /home/linux/llama.cpp/build/bin/libggml-base.so.0
+#2  0x0000f5d16e0dc5cc in ggml_uncaught_exception() () from /home/linux/llama.cpp/build/bin/libggml-base.so.0
+#3  0x0000f5d16deca570 in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#4  0x0000f5d16dec0e04 [PAC] in std::terminate() () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#5  0x0000f5d16deca908 [PAC] in __cxa_throw () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#6  0x0000f5d16decb030 [PAC] in operator new(unsigned long) () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#7  0x0000f5d16eaf3f58 [PAC] in std::vector<float, std::allocator<float> >::reserve(unsigned long) () from /home/linux/llama.cpp/build/bin/libllama-perplexity-impl.so
+#8  0x0000f5d16eae84f4 in perplexity(llama_context*, common_params const&, int) () from /home/linux/llama.cpp/build/bin/libllama-perplexity-impl.so
+#9  0x0000f5d16eaf0af4 in llama_perplexity(int, char**) () from /home/linux/llama.cpp/build/bin/libllama-perplexity-impl.so
+#10 0x0000f5d16e9284c4 in __libc_start_call_main (main=main@entry=0xc255262c06c0 <main>, argc=argc@entry=17, argv=argv@entry=0xffffc2cc0e58) at ../sysdeps/nptl/libc_start_call_main.h:58
+warning: 58	../sysdeps/nptl/libc_start_call_main.h: No such file or directory
+#11 0x0000f5d16e928598 in __libc_start_main_impl (main=0xc255262c06c0 <main>, argc=17, argv=0xffffc2cc0e58, init=<optimized out>, fini=<optimized out>, rtld_fini=<optimized out>, stack_end=<optimized out>) at ../csu/libc-start.c:360
+warning: 360	../csu/libc-start.c: No such file or directory
+#12 0x0000c255262c0730 in _start ()
+[Inferior 1 (process 3723453) detached]
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+timeout: the monitored command dumped core

@@ -76,7 +76,7 @@ project's own gcc/cppcheck/clang-tidy/MISRA pipeline, the patched template solve
 | # | Question | Status |
 |---|---|---|
 | **E4** | Can V4 Flash *write* a fix, not just analyse one? | ✅ **YES — 10/10 on the eval, patched template** |
-| **E5** | Where is the rope-stretch tolerance threshold? | open |
+| **E5** | Where is the rope-stretch tolerance threshold? | ✅ **ANSWERED — there is none in the stretch factor. See #9.** |
 | **E7** | Does in-place system-message rendering fix the invalidation? | ✅ **ANSWERED — 96.4% of redundant prefill removed, and 10/10 vs 4/10 on the eval. Ship it.** |
 | ~~E1~~ | What rewrites history mid-conversation? | ✅ answered — see #15 |
 | ~~E2~~ | Does larger `--ubatch-size` help prefill? | ✅ answered — see #12 |
@@ -571,8 +571,34 @@ Native training at 1M does not exist, and not by oversight: attention is O(n²),
 and there are not enough genuine million-token documents to train on. Every
 long-context model is extended in stages; "native" is a spectrum, not a binary.
 
-**[unverified]** The comparable numbers for model selection are therefore *base
-length* and *stretch factor*, not the presence of scaling:
+### E5 — the tolerance threshold is not a stretch factor [verified]
+
+Qwen3-Coder-30B, one variable per pass, each depth against its own control:
+
+| depth | x1.25 | x1.5 | x2.0 | x4.0 |
+|---|---:|---:|---:|---:|
+| 8,192 | −0.89% | −1.53% | −2.12% | **−3.17%** |
+| 32,768 | −0.03% | +0.01% | +0.19% | +0.83% |
+| 131,072 | −0.18% | −0.09% | −0.01% | **+2.39%** |
+
+**The worst point across 15 passes is +2.39%.** The same flag on gpt-oss at its
+ceiling gave **+3,281%**. And ×4.0 *improves* Qwen by 3.17% at 8,192 while costing
+2.39% at 131,072 — same model, same corpus, opposite sign.
+
+**The mechanism is mismatch, not extrapolation.** `--rope-scale N` divides
+positions by N: it compresses the angular range and never pushes past the trained
+limit. The damage is the distance between the mapping applied at inference and the
+one the model learned. Qwen ships no vendor YaRN, so ×2 is a small perturbation of
+a mapping learned at ×1. gpt-oss ships factor 32, so ×2 gives an effective ×64 and
+every position lands at an angle it never saw.
+
+⚠️ **262,144 is unreachable on this box.** `llama-perplexity` holds
+`n_ctx × n_vocab × 4` bytes of logits; at Qwen's 151,936 vocab that is 148.4 GiB,
+against 74.2 GiB at 131,072. So Qwen was tested at *half* its native window, and a
+stretch at its true ceiling remains untested.
+
+**[verified — the direction]** The comparable numbers for model selection are
+therefore *base length* and *stretch factor*, not the presence of scaling:
 
 | Model | Base | Factor | Result |
 |---|---:|---:|---|
