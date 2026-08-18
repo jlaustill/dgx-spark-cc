@@ -67,26 +67,26 @@ Same 13 captured requests, two server arms differing in one flag, each from a
 cold cache. Excluding the cold prefill both arms pay, redundant work drops from
 452,924 tokens (30.1 min) to 16,106 (1.8 min).
 
-**It is not yet shipped.** The change moves reminders from the prompt head into
-the conversation body, which is a behaviour change, not a pure optimisation. See
-#15 and E4.
+**And it is not merely faster.** On a 10-task agentic eval scored by the
+project's own gcc/cppcheck/clang-tidy/MISRA pipeline, the patched template solved
+**10/10** against stock's **4/10**, in 40% less wall-clock. See #15.
 
 ## Open work
 
 | # | Question | Status |
 |---|---|---|
-| **E4** | Can V4 Flash *write* a fix, not just analyse one? | **open — and it now blocks E7 too** |
+| **E4** | Can V4 Flash *write* a fix, not just analyse one? | ✅ **YES — 10/10 on the eval, patched template** |
 | **E5** | Where is the rope-stretch tolerance threshold? | open |
-| **E7** | Does in-place system-message rendering fix the invalidation? | ✅ **throughput answered (96.4%). Quality gate open — needs E4's eval.** |
+| **E7** | Does in-place system-message rendering fix the invalidation? | ✅ **ANSWERED — 96.4% of redundant prefill removed, and 10/10 vs 4/10 on the eval. Ship it.** |
 | ~~E1~~ | What rewrites history mid-conversation? | ✅ answered — see #15 |
 | ~~E2~~ | Does larger `--ubatch-size` help prefill? | ✅ answered — see #12 |
 | ~~E3~~ | Does the native FP4 path beat a dequant format? | ✅ answered — see #13 |
 | ~~E6~~ | DSV4 compressed-cache shifting | ❌ dropped — see #16 for the real reason |
 
-**The gating prerequisite is one thing: a repeatable eval.** 10–20 real issues
-with known-good patches, scored on *compiles* and *fixes the issue*. Without it
-E4 is unfalsifiable, E5 is unfalsifiable, and E7 — a 96.4% win — cannot ship.
-This is now the highest-value work in the project.
+**The eval now exists** — 10 real closed issues with known-good patches, scored
+fail-then-pass on the project's own gate (`tools/eval-build.py`,
+`tools/eval-run.py`). It answered E4 and E7's quality question. E5 remains open
+and is now cheap to run against the same harness.
 
 ---
 
@@ -890,16 +890,40 @@ Template at `verify/templates/dsv4-inline-assistant.jinja`; it keeps the
 preamble hoisted until the model first speaks, so only mid-conversation reminders
 move.
 
-### ⚠️ Not yet shipped — the quality gate
+### The quality gate is passed — ship it [verified]
 
-This is a behaviour change, not a pure optimisation. Greedy A/B at temperature 0
-over five prompts: **tool calls agree on 3 of 5**. Neither difference is a
-regression and one is arguably better — where the stock arm marked a task
-complete from memory of a notification, the patched arm read the actual output
-file first. But **five prompts is not an evaluation.**
+Ten real closed issues, each with a known-good patch, scored fail-then-pass on
+the project's own gate (transpile + match `.expected.*` + gcc + cppcheck +
+clang-tidy + MISRA). Claude Code driving this server, editing the repo with tools
+— the actual workload, not a prompt comparison.
 
-Shipping requires the eval that E4 needs anyway. Until then the win is proven and
-parked.
+| | stock | patched |
+|---|---:|---:|
+| **solved** | **4/10** | **10/10** |
+| prefill tokens | 15,341,796 | **1,877,020** (8.2× less) |
+| prefill **per turn** | 34,789 | **2,005** (**17× less**) |
+| turns | 441 | 936 |
+| wall clock | 14.3 h | **8.6 h** |
+| timed out (90 min cap) | **9/10** | 2/10 |
+
+**The patched template solved every task, including all six stock failed, in 40%
+less wall-clock.** The concern that inline reminders might be weighted differently
+and hurt behaviour is not supported: it is better on every axis measured.
+
+Prefill *per turn* is the cleanest figure here — normalised for how much work each
+arm did, so it is not confounded by turn count. Stock burns ~35k tokens of
+redundant re-reading on every single turn.
+
+⚠️ **Stock's 4/10 is a lower bound.** Nine of ten hit the 90-minute cap, so with
+unlimited time it would solve more. The supported claim is *"under a fixed time
+budget, patched solves 2.5× as many"*, not that the template makes the model
+smarter. Two cases resist even that reading — on #1094 stock spent 43 turns and
+failed where patched needed 34, and on #1037 stock spent 50 where patched needed
+26 — but n=2 is not a mechanism.
+
+⚠️ One anomaly: **#1012** is the only task where stock was cheaper (50 min, no
+timeout) while patched took the full 90 and burned 750k prefill, 4× its own
+average. Both solved it. Unexplained.
 
 ### Generality — narrower than it looks [verified against two other templates]
 

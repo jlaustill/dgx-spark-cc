@@ -1,0 +1,133 @@
+[08-17 01:40:18] === ARM: stock (stock template) ===
+[08-17 01:41:40]   server up after 80s
+
+=== [1/10] issue #1094 — fix: precompute const-width bit-range extraction mas
+  baseline: fails as expected
+  90.0 min, 43 turns, 1,491,052 prefill tok, 3 file(s) edited [TIMEOUT]
+  not solved (ran=True passed=0 failed=1)
+
+=== [2/10] issue #1074 — feat: implement `forever` infinite-loop statement (A
+  baseline: fails as expected
+  90.0 min, 41 turns, 1,644,253 prefill tok, 0 file(s) edited [TIMEOUT]
+  not solved (ran=True passed=0 failed=1)
+
+=== [3/10] issue #850 — fix: emit MISRA 21.6 inline suppression for stdio.h 
+  baseline: fails as expected
+  90.0 min, 44 turns, 1,678,390 prefill tok, 33 file(s) edited [TIMEOUT]
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [4/10] issue #1048 — fix: modernize rotted example .cnx files + guard the
+  baseline: fails as expected
+  90.0 min, 36 turns, 1,472,147 prefill tok, 5 file(s) edited [TIMEOUT]
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [5/10] issue #1037 — fix: consistent indentation in string init/concat/su
+  baseline: fails as expected
+  90.0 min, 50 turns, 1,580,508 prefill tok, 3 file(s) edited [TIMEOUT]
+  not solved (ran=True passed=0 failed=1)
+
+=== [6/10] issue #1044 — fix: use bounded strncpy for string init from variab
+  baseline: fails as expected
+  90.0 min, 50 turns, 1,720,126 prefill tok, 4 file(s) edited [TIMEOUT]
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [7/10] issue #1038 — fix: support scoped type arrays in struct fields
+  baseline: fails as expected
+  90.0 min, 46 turns, 1,465,091 prefill tok, 0 file(s) edited [TIMEOUT]
+  not solved (ran=True passed=0 failed=1)
+
+=== [8/10] issue #1029 — fix: .element_count property on string arrays in cod
+  baseline: fails as expected
+  90.0 min, 53 turns, 1,687,830 prefill tok, 0 file(s) edited [TIMEOUT]
+  not solved (ran=True passed=0 failed=1)
+
+=== [9/10] issue #1019 — fix: scope-member string init and use-before-init (i
+  baseline: fails as expected
+  90.0 min, 54 turns, 1,678,968 prefill tok, 10 file(s) edited [TIMEOUT]
+  not solved (ran=True passed=0 failed=1)
+
+=== [10/10] issue #1012 — fix(E0381): extend use-before-init check to compound
+  baseline: fails as expected
+  49.6 min, 24 turns, 923,431 prefill tok, 6 file(s) edited
+  SOLVED (ran=True passed=1 failed=0)
+
+=== stock: 4/10 solved ===
+[08-17 16:01:53]   arm stock finished
+[08-17 16:01:53] === ARM: patched (patched template) ===
+[08-17 16:03:17]   server up after 80s
+
+=== [1/10] issue #1094 — fix: precompute const-width bit-range extraction mas
+  baseline: fails as expected
+  23.7 min, 34 turns, 76,773 prefill tok, 5 file(s) edited
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [2/10] issue #1074 — feat: implement `forever` infinite-loop statement (A
+  baseline: fails as expected
+  44.7 min, 107 turns, 157,290 prefill tok, 20 file(s) edited
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [3/10] issue #850 — fix: emit MISRA 21.6 inline suppression for stdio.h 
+  baseline: fails as expected
+  30.2 min, 55 turns, 87,538 prefill tok, 79 file(s) edited
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [4/10] issue #1048 — fix: modernize rotted example .cnx files + guard the
+  baseline: fails as expected
+  83.4 min, 145 turns, 173,888 prefill tok, 12 file(s) edited
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [5/10] issue #1037 — fix: consistent indentation in string init/concat/su
+  baseline: fails as expected
+  16.9 min, 26 turns, 98,896 prefill tok, 3 file(s) edited
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [6/10] issue #1044 — fix: use bounded strncpy for string init from variab
+  baseline: fails as expected
+  22.0 min, 51 turns, 74,280 prefill tok, 8 file(s) edited
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [7/10] issue #1038 — fix: support scoped type arrays in struct fields
+  baseline: fails as expected
+  90.0 min, 152 turns, 196,703 prefill tok, 19 file(s) edited [TIMEOUT]
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [8/10] issue #1029 — fix: .element_count property on string arrays in cod
+  baseline: fails as expected
+  69.2 min, 146 turns, 136,906 prefill tok, 8 file(s) edited
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [9/10] issue #1019 — fix: scope-member string init and use-before-init (i
+  baseline: fails as expected
+  45.5 min, 96 turns, 124,835 prefill tok, 0 file(s) edited
+  SOLVED (ran=True passed=1 failed=0)
+
+=== [10/10] issue #1012 — fix(E0381): extend use-before-init check to compound
+  baseline: fails as expected
+  90.0 min, 124 turns, 749,911 prefill tok, 4 file(s) edited [TIMEOUT]
+  SOLVED (ran=True passed=1 failed=0)
+
+=== patched: 10/10 solved ===
+[08-18 00:39:19]   arm patched finished
+
+[08-18 00:39:19] === COMPARISON ===
+  issue        stock      patched      delta
+------------------------------------------------
+   #850         PASS         PASS
+  #1012         PASS         PASS
+  #1019         fail         PASS
+  #1029         fail         PASS
+  #1037         fail         PASS
+  #1038         fail         PASS
+  #1044         PASS         PASS
+  #1048         PASS         PASS
+  #1074         fail         PASS
+  #1094         fail         PASS
+------------------------------------------------
+  stock: 4/10 solved
+  patched: 10/10 solved
+
+   stock: 4/10 solved |    860 min |  441 turns |   15,341,796 prefill tok | 9 timed out
+ patched: 10/10 solved |    516 min |  936 turns |    1,877,020 prefill tok | 2 timed out
+
+Prefill tokens is the E7 measurement under real agentic load;
+solved and turns are what make the quality comparison fair.

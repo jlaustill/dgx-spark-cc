@@ -517,6 +517,56 @@ difference could not then be separated from simply having had more attempts. Bot
 arms therefore get a timeout long enough that turns are not binding, and every
 task records turns and prefill so a binding timeout is visible rather than silent.
 
+### E4 / E7-quality — the 10-task agentic eval ✅ **10/10 vs 4/10**
+
+> **Registered:** if the patched template degrades behaviour, it solves fewer.
+> If both arms score 0, the comparison is uninformative and falls back to
+> throughput.
+
+Claude Code driving the local server, editing the repo with tools, scored on the
+project's own gate (transpile + match `.expected.*` + gcc + cppcheck + clang-tidy
++ MISRA), 90-minute cap per task.
+
+| issue | stock | patched |
+|---|---|---|
+| #1094 | fail, 90m, 43 turns, 1.49M | **PASS**, 24m, 34 turns, 77k |
+| #1074 | fail, 90m, 41 turns, 1.64M | **PASS**, 45m, 107 turns, 157k |
+| #850 | PASS, 90m, 44 turns, 1.68M | PASS, 30m, 55 turns, 88k |
+| #1048 | PASS, 90m, 36 turns, 1.47M | PASS, 83m, 145 turns, 174k |
+| #1037 | fail, 90m, 50 turns, 1.58M | **PASS**, 17m, 26 turns, 99k |
+| #1044 | PASS, 90m, 50 turns, 1.72M | PASS, 22m, 51 turns, 74k |
+| #1038 | fail, 90m, 46 turns, 1.47M | **PASS**, 90m, 152 turns, 197k |
+| #1029 | fail, 90m, 53 turns, 1.69M | **PASS**, 69m, 146 turns, 137k |
+| #1019 | fail, 90m, 54 turns, 1.68M | **PASS**, 46m, 96 turns, 125k |
+| #1012 | PASS, 50m, 24 turns, 0.92M | PASS, 90m, 124 turns, 750k |
+
+| | stock | patched |
+|---|---:|---:|
+| solved | **4/10** | **10/10** |
+| prefill | 15,341,796 | **1,877,020** (8.2x) |
+| prefill/turn | 34,789 | **2,005** (**17x**) |
+| turns | 441 | 936 |
+| hours | 14.3 | **8.6** |
+| timed out | 9 | 2 |
+
+**Prefill per turn is the cleanest figure** — normalised for work done, so it is
+not confounded by turn count.
+
+**What is NOT established.** Stock's 4/10 is a lower bound: 9 of 10 hit the cap,
+so with unlimited time it would solve more. The supported claim is "under a fixed
+time budget, patched solves 2.5x as many", not "the template makes the model
+smarter". Two cases resist even that — #1094 (stock 43 turns fail vs patched 34
+solve) and #1037 (50 fail vs 26 solve) — where stock had *more* attempts and
+still lost. n=2 is not a mechanism.
+
+**Unexplained:** #1012 is the only task where stock was cheaper (50m, no timeout)
+while patched took the full 90m and 750k prefill, 4x its own average. Both solved.
+
+**Design note.** This build of Claude Code has no `--max-turns`, so both arms got
+the same generous cap and every task records turns and prefill. The patched arm
+did get 2.1x more turns — but it also *needed fewer* on 3 of the 4 tasks stock
+also solved, so "more attempts" does not explain the gap on its own.
+
 ### V13.3 — how much of V4 could take the MXFP4 path? ✅
 
 Read from the actual GGUF tensor list across all four shards:

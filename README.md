@@ -5,8 +5,12 @@ locally-hosted models on an NVIDIA DGX Spark (GB10, 121 GB unified memory).
 
 The headline: **96.4% of the redundant prefill in a real agentic session comes from
 one interaction between how Claude Code sends system messages and how DeepSeek V4's
-chat template renders them.** One template override removes it. See
-[FINDINGS.md](FINDINGS.md) §15.
+chat template renders them.** One template override removes it.
+
+On a 10-task agentic eval built from real closed issues — scored by the project's
+own gcc / cppcheck / clang-tidy / MISRA gate — that override took the local model
+from **4/10 to 10/10 solved**, in 40% less wall-clock, with **17× less prefill per
+turn**. See [FINDINGS.md](FINDINGS.md) §15.
 
 ## Start here
 
@@ -128,15 +132,24 @@ tools/arm.sh patched && tools/replay.py --tag patched
   identical streams and reads as "no effect".
 - **Seven findings are still marked `[unverified]`** — measured once, not yet
   re-tested. They are labelled as such in FINDINGS.md.
-- **The E7 template fix is proven on throughput but not shipped.** It changes model
-  behaviour (tool calls agreed on 3 of 5 sampled prompts, with no regression
-  observed). Shipping needs a real eval, which does not exist yet.
+- **The E7 template fix is now proven on both throughput and task success**
+  (10/10 vs 4/10 on the eval). Stock's 4/10 is a *lower bound* — 9 of its 10 tasks
+  hit the 90-minute cap — so the supported claim is "under a fixed time budget,
+  patched solves 2.5× as many", not that the template makes the model smarter.
 
-## The biggest open item
+## The eval
 
-A repeatable eval — 10–20 real issues with known-good patches, scored on *compiles*
-and *fixes the issue*. It gates shipping the 96.4% win and two other open questions.
-Contributions welcome.
+`tools/eval-build.py` assembles tasks from closed issues whose fix PR added a
+runnable regression fixture, and verifies each one fails on the buggy base commit
+*and* passes with the known-good patch. Candidates that pass on the base (the test
+does not capture the bug) or fail even with the reference fix (unwinnable) are
+discarded — both would corrupt a score, in opposite directions.
+
+`tools/eval-run.py` scores a model by driving Claude Code against a local server,
+editing the repo with tools. Results in `results/eval/`.
+
+Still open: **E5**, the rope-stretch tolerance threshold, now cheap to run against
+the same harness.
 
 ## Hardware
 
