@@ -155,6 +155,63 @@ def report(seqs, server, label="stock", tag="stock"):
     return rows
 
 
+def capture_set(d):
+    """Sequence numbers actually present, checked against the manifest.
+
+    Captures are numbered but not contiguous: req-00001..8 of the V15.1 set were
+    overwritten in place by an unrelated session and later moved out, so
+    range(1, n+1) reads files that are not there. The worse failure is quieter --
+    a set that merely DIFFERS from the one a published number was measured on
+    still runs and still prints a total. That is precisely how the original
+    overwrite survived unnoticed until token counts stopped matching, so the
+    manifest is consulted rather than trusted to be irrelevant.
+    """
+    seqs = sorted(int(f[4:-5]) for f in os.listdir(d)
+                  if f.startswith("req-") and f.endswith(".json"))
+    if not seqs:
+        sys.exit(f"no req-*.json in {d}")
+
+    mpath = os.path.join(d, "manifest.jsonl")
+    if not os.path.exists(mpath):
+        print(f"note: no manifest.jsonl in {d} - capture provenance unchecked\n")
+        return seqs
+
+    # The manifest is append-only, so a filename appearing twice means that file
+    # was written more than once and the later write won.
+    rows_by_file = {}
+    for line in open(mpath):
+        line = line.strip()
+        if line:
+            r = json.loads(line)
+            rows_by_file.setdefault(r["file"], []).append(r)
+
+    warn = []
+    for s_ in seqs:
+        f = "req-%05d.json" % s_
+        size = os.path.getsize(os.path.join(d, f))
+        rows = rows_by_file.get(f)
+        if not rows:
+            warn.append(f"  {f}: present on disk but absent from the manifest")
+        elif not any(r["bytes"] == size for r in rows):
+            have = ", ".join("{:,}".format(r["bytes"]) for r in rows)
+            warn.append(f"  {f}: {size:,} bytes on disk, manifest recorded {have}")
+        elif len(rows) > 1:
+            warn.append(f"  {f}: captured {len(rows)} times; this content is from "
+                        f"{rows[-1]['ts']}, not the first capture")
+
+    missing = [r for f, rs in rows_by_file.items() for r in rs[:1]
+               if int(f[4:-5]) not in seqs]
+    if missing:
+        warn.append(f"  {len(missing)} manifest entr{'y' if len(missing)==1 else 'ies'} "
+                    f"have no file on disk (earliest seq {min(int(r['file'][4:-5]) for r in missing)})")
+
+    if warn:
+        print("!! capture set does not match the manifest:")
+        print("\n".join(warn))
+        print("!! totals from this run are NOT comparable to published numbers.\n")
+    return seqs
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--server", default=R.SERVER,
@@ -165,8 +222,7 @@ def main():
     a = ap.parse_args()
     R.DUMP_DIR = a.dir
 
-    n = len([f for f in os.listdir(R.DUMP_DIR) if f.startswith("req-")])
-    seqs = list(range(1, n + 1))
+    seqs = capture_set(R.DUMP_DIR)
 
     if a.compare:
         stock_rows = report(seqs, a.server, "stock", "stock")

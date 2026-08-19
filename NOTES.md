@@ -126,6 +126,27 @@ Two servers (stock template on :8003, patched on :8011 via
 
 **96.7% removed, before any GPU work.** Cost: ~2 hours.
 
+**These inputs are only partly reproducible, and the reason is worth recording.**
+The measured set was the 13 requests captured 2026-08-11 — one session, messages
+growing 19 → 44. On 2026-08-13 `dump-proxy.py` restarted, reset its counter, and
+overwrote `req-00001`–`req-00008` in place with an unrelated session. V15.1 and
+V15.2 both ran on 08-12, *between* those events, so the published numbers are
+measurements of the intact single-session set.
+
+That ordering is not an assumption; it is checkable from what survives.
+`manifest.jsonl` retains all 21 entries, and the original bytes divided by the
+rendered token counts V15.1 reported give a flat **3.76–3.79 bytes/token across
+all 13 files**. The overwrite set gives 0.02 for `req-00001` — a 2,369-byte file
+cannot render to the 138,595 tokens V15.1 recorded for it.
+
+The consequence is a real gap: re-running `prefix.py` against `~/e1-dumps` today
+reproduces requests 9–13 only. The inputs behind the two expensive divergences
+(#2→#3, #7→#8) are **permanently lost** — overwritten, not deleted, so no backup
+holds them. The surviving five show no divergence at all, because no system
+message was appended during them. Anyone reproducing this must capture a fresh
+session; see the README for how, and note the three guards that now make the
+same overwrite impossible.
+
 Residual on #2→#3 (2,391 tokens) is not a template bug — detokenised, the lost
 tail is an ephemeral *user* message ("The user stepped away and is coming
 back…") that the client did not retain. Genuine content change at 98.3% depth.
