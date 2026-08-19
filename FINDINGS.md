@@ -85,8 +85,8 @@ project's own gcc/cppcheck/clang-tidy/MISRA pipeline, the patched template solve
 
 **The eval now exists** — 10 real closed issues with known-good patches, scored
 fail-then-pass on the project's own gate (`tools/eval-build.py`,
-`tools/eval-run.py`). It answered E4 and E7's quality question. E5 remains open
-and is now cheap to run against the same harness.
+`tools/eval-run.py`). It answered E4 and E7's quality question. **Every experiment
+the document opened is now closed.**
 
 ---
 
