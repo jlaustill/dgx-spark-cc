@@ -1,6 +1,7 @@
 # Running Claude Code against local models on a DGX Spark
 
-What is true, as measured on one machine over 2026-08-08/12.
+What is true, as measured on one machine. Original findings 2026-08-08/10;
+falsification pass 2026-08-12/18.
 
 Every finding carries a confidence marker:
 
@@ -118,7 +119,7 @@ legitimate on its own — and only appears when you sum a whole session.
 | Host | `gx10-52c8`, NVIDIA DGX Spark (GB10) |
 | Compute capability | **12.1** (Blackwell) [verified] |
 | Memory | 121 GB unified LPDDR5X, ~273 GB/s theoretical |
-| Measured effective bandwidth | ~227 GB/s [unverified — derived from one shallow decode point] |
+| Measured effective bandwidth | **no single value** — Qwen achieves 221 GB/s, gpt-oss 143 GB/s on the same box [see #6] |
 | Arch / toolchain | aarch64, CUDA 13.0, gcc 13.3 |
 | Storage | NVMe, ~3.7 GB/s observed writes |
 | llama.cpp | pinned at `687e778` — all numbers here are on this commit |
@@ -269,8 +270,13 @@ recovers almost nothing. The conclusion holds.
 ⚠️ The original ds4-server event described here diverged at **~29.7% depth**
 (token 119,600 of 402,000), which is *not* the same phenomenon as the 6.5% head
 insertion #15 identifies. Either the client changed behaviour between sessions or
-there are two distinct mechanisms and only one is explained. V4.2 — replay the
-same captured requests against both engines — settles it.
+there are two distinct mechanisms and only one is explained.
+
+**V4.2 was attempted and cannot settle it.** Replaying the same captured requests
+against both engines is not a controlled comparison: the same conversation renders
+to **114,426 tokens on ds4-server and 140,656 on llama.cpp**, a 19% gap, because
+the two use different chat templates. "Identical input, two engines" is not
+achievable at the token level, so the ~29.7% event remains unexplained.
 
 ## 5. Long prefill collides with client timeouts
 
@@ -490,7 +496,7 @@ or ubatch sizes. Across architectures it silently assumes the active-parameter
 figure captures all the work, which for V4's indexer and heavy expert gather it
 does not. **Cross-model rows are indicative; same-model rows are evidence.**
 
-## 9. gpt-oss-120b cannot be stretched past 131k
+## 9. Rope flags are silently applied, and the damage scales with mismatch — not with the stretch factor
 
 **[verified — code behaviour and magnitude]**
 
@@ -605,9 +611,14 @@ therefore *base length* and *stretch factor*, not the presence of scaling:
 | DeepSeek V4 Flash | 65,536 | ×16 | 1M |
 | gpt-oss-120b | 4,096 | ×32 | 131k |
 
-Whether that translates into measurably better long-context fidelity is
-**untested** — E5. gpt-oss was rejected here for its **context ceiling**, not its
-quality; its output was never evaluated.
+**E5 supports the instinct behind this table.** The vendor factor is what
+determines how much headroom an added stretch has: a model already at ×32 has
+almost none, which is why ×2 costs gpt-oss +3,281% and Qwen at ×1 barely moves.
+
+**It does not prove the table.** These two models differ in weights, architecture
+and training data, so base-length-and-factor remains a heuristic for model
+*selection*, not a measured law. gpt-oss was rejected here for its **context
+ceiling**, not its quality; its output was never evaluated.
 
 ## 10. llama.cpp beats the purpose-built engine for DeepSeek V4
 
@@ -633,6 +644,13 @@ comparison.** A larger model decoding *faster* is surprising and deserves
 re-measurement at matched settings (V10.1). Note also that `335 t/s` appears here
 as ds4-server's prefill *and* in #8's matrix as llama.cpp's V4 `pp4096 @ ub512` —
 one attribution is likely transposed.
+
+**One number was measured [verified].** Replaying the same conversation, ds4-server
+prefilled 114,426 tokens in 369.9 s = **309.6 t/s**, against llama.cpp's 138,595 in
+526.9 s = **263.0 t/s** at comparable depth. That is consistent in *direction* with
+the table above, so the suspected transposition is probably not one — ds4-server
+does appear to prefill faster. It is still not a controlled comparison: the quant,
+the KV type and the rendered token count all differ.
 
 The KV-quantisation capability is reason enough to prefer llama.cpp regardless;
 that part does not depend on the contested rows.
@@ -1091,7 +1109,7 @@ Server and build scripts live in `/home/linux`: `build-llamacpp.sh`,
 `dsv4-server.sh`, `qwen-server.sh`, `gptoss-server.sh`, `install-*.sh`,
 `cleanup-models.sh`.
 
-Verification harness, per-test results and raw logs live in `/home/linux/verify`.
+Verification harness, per-test results and raw logs live in `tools/`, `results/` and `data/`.
 Methodology, falsified assumptions and the full test log are in
 `NOTES.md`. The pre-verification version of this document is preserved
 as `spark-cc-finding.ORIGINAL-20260812.md`.

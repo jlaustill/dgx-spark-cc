@@ -6,7 +6,8 @@ what came back, and every assumption that turned out to be wrong — the origina
 document's and my own.
 
 Machine: `gx10-52c8` (GB10, cc 12.1, 121 GB). llama.cpp pinned at `687e778`.
-Verification run 2026-08-12. Raw logs and harness in `/home/linux/verify/`.
+Verification run 2026-08-12 to 2026-08-18. Raw logs in `data/`, harness in
+`tools/`.
 
 ---
 
@@ -35,9 +36,7 @@ a discriminating outcome written down *before* the test ran.
 
 | # | Claimed | Actually |
 |---|---|---|
-| 3 | Checkpoint interval ~20,480 tokens | **10,240** (`interval 10000` aligned up to `align 2048`) |
 | 3 | Eviction is hit-weighted, killing unused rungs | Hit-weighting is `(hits+1)` — weak. The dominant term is `kv_cache_incoming_supersedes_continued`, a **×0.05** penalty on superseded rungs |
-| 3 | ~21 snapshots totalling ~46 GiB | Does not follow from the interval, from 13.5 KiB/token, or from cumulative prefixes. Unconfirmed |
 | 5 | Budget is 1800 s | **~301 s by default** |
 | 5 | Set `CLAUDE_SLOW_FIRST_BYTE_MS` to fix it | **That variable does nothing.** `API_TIMEOUT_MS` is the knob, and it only shortens |
 | 7 | "MXFP4 is the only quant with hardware acceleration on GB10" | True **only for prefill**. Decode has no Blackwell-gated FP4 path at all |
@@ -46,6 +45,12 @@ a discriminating outcome written down *before* the test ran.
 | 15 | Reset caused by a 128-token sliding window leaving no state at position 9,200 | The server is never told the window size. `llama_model_n_swa()` returns **0** for DEEPSEEK4 — see #16 |
 | 15 | Insertion lands "~9,200 tokens in, about 6%" | Measured **9,595–9,838 tokens, 6.5–6.7%** |
 | 13 | Custom-quant marginal return "~30%" | **+6.8% to +13.7%** — only 40.1% of params fit at MXFP4 |
+
+Two entries were removed from this table after measurement. Both concerned #3's
+checkpoint ladder, and in both the original document turned out to be right: the
+interval is the realised 20,189-token spacing rather than the configured constant,
+and the ladder scales to the same order as the stated ~21 files / ~46 GiB. The
+retraction is recorded below.
 
 ### Mine, during this pass
 

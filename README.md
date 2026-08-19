@@ -148,8 +148,10 @@ discarded — both would corrupt a score, in opposite directions.
 `tools/eval-run.py` scores a model by driving Claude Code against a local server,
 editing the repo with tools. Results in `results/eval/`.
 
-Still open: **E5**, the rope-stretch tolerance threshold, now cheap to run against
-the same harness.
+**Every experiment the original document opened is now closed** — E1 through E7.
+E5's answer is in [FINDINGS.md](FINDINGS.md) §9: there is no threshold in the
+stretch factor, because the damage tracks mismatch with the trained mapping, not
+the multiplier.
 
 ## Hardware
 
