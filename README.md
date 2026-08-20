@@ -10,18 +10,27 @@ chat template renders them.** One template override removes it.
 On a 10-task agentic eval built from real closed issues — scored by the project's
 own gcc / cppcheck / clang-tidy / MISRA gate — that override took the local model
 from **4/10 to 10/10 solved**, in 40% less wall-clock, with **17× less prefill per
-turn**. See [FINDINGS.md](FINDINGS.md) §15.
+turn**. See [15a](findings/verified/15a-a-trailing-system-message-rewrites-the-head.md),
+[15b](findings/verified/15b-inline-rendering-removes-96-percent-of-redundant-prefill.md)
+and [15c](findings/verified/15c-the-patched-template-solves-10-of-10.md).
 
 ## Start here
 
 | | |
 |---|---|
-| **[FINDINGS.md](FINDINGS.md)** | What is true. Every finding carries a confidence marker. |
+| **[findings/](findings/)** | What is true. One claim per file, and the directory is the status. |
 | **[NOTES.md](NOTES.md)** | How it was tested — every experiment, every wrong assumption, the traps. |
 
-The two are deliberately separate. FINDINGS states conclusions with no archaeology;
+The two are deliberately separate. `findings/` states conclusions with no archaeology;
 NOTES holds the process, including the assumptions that turned out to be wrong (the
 original document's *and* those made during verification).
+
+Each finding is one file with a `status:` in its frontmatter, and it sits in the
+directory that matches. There is no `corrected` status — a correction is a fact
+about a claim's history, so a file that replaced an earlier figure carries a
+`supersedes:` field, and a recommendation that turned out to be false lives in
+`findings/refuted/`. Run `tools/findings-index.py` to regenerate the index and
+validate the cross-links.
 
 ## Why there are two documents
 
@@ -33,18 +42,29 @@ decisions.
 So every finding was re-tested as though it were **wrong**, with a discriminating
 outcome written down *before* each test ran. Several did not survive:
 
-| finding | claimed | measured |
-|---|---|---|
-| #5 | `CLAUDE_SLOW_FIRST_BYTE_MS` fixes prefill timeouts | **That variable does nothing.** `API_TIMEOUT_MS` is the knob, and it only shortens. Default budget is ~301 s, not 1800 s |
-| #6 | `--cache-type q8_0` is "the highest-leverage flag for long-context decode" | **Zero decode speedup.** Halving KV bytes changed nothing at any depth — it is a memory-capacity flag |
-| #7 | MXFP4's fewer bytes make it decode faster | **0.79×, not the predicted 1.21×.** Decode has no native FP4 path and pays dequant per byte |
-| #14 | Output costs ~38× input | Depth-mismatched. **~17×** at matched depth |
-| #15 | Cache reset caused by a 128-token sliding window | The server is never told the window size — one hardcoded `return 0` (see §16) |
+Four of them were false outright and live in
+[findings/refuted/](findings/refuted/):
+
+| claimed | measured |
+|---|---|
+| [`CLAUDE_SLOW_FIRST_BYTE_MS` fixes prefill timeouts](findings/refuted/05c-slow-first-byte-ms-fixes-prefill-timeouts.md) | **That variable does nothing.** `API_TIMEOUT_MS` is the knob, and it only shortens. Default budget is ~301 s, not 1800 s |
+| [`--cache-type q8_0` is "the highest-leverage flag for long-context decode"](findings/refuted/06b-q8-0-kv-speeds-up-long-context-decode.md) | **Zero decode speedup.** Halving KV bytes changed nothing at any depth — it is a memory-capacity flag |
+| [MXFP4's fewer bytes make it decode faster](findings/refuted/07b-mxfp4-outdecodes-q8-0.md) | **0.79×, not the predicted 1.21×.** Decode has no native FP4 path and pays dequant per byte |
+| [Cache reset caused by a 128-token sliding window](findings/refuted/16b-cache-reset-is-caused-by-a-small-sliding-window.md) | The server is never told the window size at all — one hardcoded `return 0` |
+
+Others were right in direction and wrong in magnitude. Those kept their claim and
+carry a `supersedes:` field naming what they replaced — output costs
+[~17× input, not ~38×](findings/verified/14-output-tokens-cost-17x-input-tokens.md),
+and the disk KV cache is worth
+[9.6× on a cold start, not ~1000×](findings/verified/01b-disk-kv-cache-is-worth-9-6x-on-a-cold-start.md).
 
 ## Layout
 
 ```
-FINDINGS.md          conclusions, with confidence markers
+findings/            conclusions, one claim per file, filed by status
+  verified/            survived a deliberate attempt to falsify it
+  unverified/          measured once, with the completing test named
+  refuted/             tested and found false, kept so nobody re-derives it
 NOTES.md             methodology, test log, falsified assumptions
 tools/               the verification harness
 templates/           stock and patched DeepSeek V4 chat templates
@@ -130,8 +150,10 @@ tools/arm.sh patched && tools/replay.py --tag patched
 - **`llama-server` binds its chat template at startup.** `/apply-template` silently
   ignores a `chat_template` in the request body, so a per-request A/B compares two
   identical streams and reads as "no effect".
-- **Seven findings are still marked `[unverified]`** — measured once, not yet
-  re-tested. They are labelled as such in FINDINGS.md.
+- **Five claims sit in [findings/unverified/](findings/unverified/)** — measured
+  once, not yet re-tested. Each names the test that would close it. Two further
+  rows inside [06c](findings/verified/06c-kv-cost-per-token-by-architecture.md)
+  are calculated rather than measured, and are marked in place.
 - **The E7 template fix is now proven on both throughput and task success**
   (10/10 vs 4/10 on the eval). Stock's 4/10 is a *lower bound* — 9 of its 10 tasks
   hit the 90-minute cap — so the supported claim is "under a fixed time budget,
@@ -149,7 +171,8 @@ discarded — both would corrupt a score, in opposite directions.
 editing the repo with tools. Results in `results/eval/`.
 
 **Every experiment the original document opened is now closed** — E1 through E7.
-E5's answer is in [FINDINGS.md](FINDINGS.md) §9: there is no threshold in the
+E5's answer is
+[09c](findings/verified/09c-damage-tracks-mismatch-not-stretch-factor.md): there is no threshold in the
 stretch factor, because the damage tracks mismatch with the trained mapping, not
 the multiplier.
 
