@@ -19,44 +19,7 @@ and [15c](findings/verified/15c-the-patched-template-solves-10-of-10.md).
 | | |
 |---|---|
 | **[findings/](findings/)** | What is true. One claim per file, and the directory is the status. |
-| **[NOTES.md](NOTES.md)** | How it was tested — every experiment, every wrong assumption, the traps. |
-
-The two are deliberately separate. `findings/` states conclusions with no archaeology;
-NOTES holds the process, including the assumptions that turned out to be wrong (the
-original document's *and* those made during verification).
-
-Each finding is one file with a `status:` in its frontmatter, and it sits in the
-directory that matches. There is no `corrected` status — a correction is a fact
-about a claim's history, so a file that replaced an earlier figure carries a
-`supersedes:` field, and a recommendation that turned out to be false lives in
-`findings/refuted/`. Run `tools/findings-index.py` to regenerate the index and
-validate the cross-links.
-
-## Why there are two documents
-
-The original findings were **observational** — sessions were run, logs were read
-afterwards, mechanisms inferred from correlation. That is enough to form a
-hypothesis and not enough to bet weeks on, and these conclusions were driving real
-decisions.
-
-So every finding was re-tested as though it were **wrong**, with a discriminating
-outcome written down *before* each test ran. Several did not survive:
-
-Four of them were false outright and live in
-[findings/refuted/](findings/refuted/):
-
-| claimed | measured |
-|---|---|
-| [`CLAUDE_SLOW_FIRST_BYTE_MS` fixes prefill timeouts](findings/refuted/05c-slow-first-byte-ms-fixes-prefill-timeouts.md) | **That variable does nothing.** `API_TIMEOUT_MS` is the knob, and it only shortens. Default budget is ~301 s, not 1800 s |
-| [`--cache-type q8_0` is "the highest-leverage flag for long-context decode"](findings/refuted/06b-q8-0-kv-speeds-up-long-context-decode.md) | **Zero decode speedup.** Halving KV bytes changed nothing at any depth — it is a memory-capacity flag |
-| [MXFP4's fewer bytes make it decode faster](findings/refuted/07b-mxfp4-outdecodes-q8-0.md) | **0.79×, not the predicted 1.21×.** Decode has no native FP4 path and pays dequant per byte |
-| [Cache reset caused by a 128-token sliding window](findings/refuted/16b-cache-reset-is-caused-by-a-small-sliding-window.md) | The server is never told the window size at all — one hardcoded `return 0` |
-
-Others were right in direction and wrong in magnitude. Those kept their claim and
-carry a `supersedes:` field naming what they replaced — output costs
-[~17× input, not ~38×](findings/verified/14-output-tokens-cost-17x-input-tokens.md),
-and the disk KV cache is worth
-[9.6× on a cold start, not ~1000×](findings/verified/01b-disk-kv-cache-is-worth-9-6x-on-a-cold-start.md).
+| **[NOTES.md](NOTES.md)** | For notes on how we came to these findings. |
 
 ## Layout
 
