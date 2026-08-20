@@ -52,8 +52,13 @@ The trade creates an asymmetry between the two phases of inference:
 
 There is no single measured bandwidth figure for this box. Qwen achieves
 221 GB/s and gpt-oss achieves 143 GB/s on the same hardware. See
-[06a](06a-shallow-decode-is-bandwidth-bound.md) and
-[07b](../refuted/07b-mxfp4-outdecodes-q8-0.md) for why the two differ.
+[06a](06a-shallow-decode-is-bandwidth-bound.md).
+
+**The gap measures the models, not their formats.** Both figures are derived as
+`active_params x bytes_per_param x t/s`, which assumes the active-parameter count
+captures every byte a token moves. A same-model test since showed MXFP4 decoding
+1.36x **faster** than Q8_0, so weight format does not explain the split. See
+[07d](07d-mxfp4-decodes-faster-than-q8-0.md).
 
 Every number in this finding set is on llama.cpp commit `687e778`. The script
 `build-llamacpp.sh` runs `git pull --ff-only`, which moves the checkout and

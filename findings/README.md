@@ -67,7 +67,7 @@ writing with `tools/findings-index.py --check`.
 
 <!-- BEGIN INDEX -->
 
-### verified (33)
+### verified (34)
 
 Survived a deliberate attempt to falsify it.
 
@@ -83,8 +83,9 @@ Survived a deliberate attempt to falsify it.
   - supersedes: The original claim that the budget defaults to 1800 s.
 - **[06a](verified/06a-shallow-decode-is-bandwidth-bound.md)** — Shallow decode is bandwidth-bound on weights
 - **[06c](verified/06c-kv-cost-per-token-by-architecture.md)** — Attention architecture decides maximum context far more than parameter count
-- **[07a](verified/07a-the-native-fp4-path-is-prefill-only.md)** — MXFP4 has hardware acceleration on GB10 for prefill only
+- **[07a](verified/07a-the-native-fp4-path-is-prefill-only.md)** — In llama.cpp CUDA, MXFP4 has hardware acceleration on prefill only
   - supersedes: The original claim, which did not bound the acceleration to prefill and implied it applied to decode as well.
+- **[07d](verified/07d-mxfp4-decodes-faster-than-q8-0.md)** — MXFP4 decodes 1.36x faster than Q8_0 on the same model
 - **[08a](verified/08a-there-is-no-universal-prefill-ceiling.md)** — There is no universal prefill ceiling
 - **[08b](verified/08b-the-bench-noise-floor-is-4-percent.md)** — The llama-bench harness transfers to production, but its precision does not
   - supersedes: The original claim that llama-bench agreed with production to four significant figures, at 349.63 predicted against 349.69 observed. That agreement was coincidence.
@@ -124,7 +125,7 @@ Measured once. Not yet re-tested against a falsification attempt. Each file name
 - **[10a](unverified/10a-llamacpp-beats-ds4-server-for-v4.md)** — llama.cpp beats ds4-server for DeepSeek V4
 - **[12b](unverified/12b-the-ubatch-2048-memory-margin.md)** — The ubatch 2048 memory margin survives a worst-case request
 
-### refuted (4)
+### refuted (5)
 
 Tested and found false. Kept because each one is still reachable by plausible reasoning, and because acting on it costs real time.
 
@@ -132,8 +133,10 @@ Tested and found false. Kept because each one is still reachable by plausible re
   - replaced by: 05a, 05b
 - **[06b](refuted/06b-q8-0-kv-speeds-up-long-context-decode.md)** — REFUTED: q8_0 KV cache speeds up long-context decode
   - replaced by: 06a, 06c
-- **[07b](refuted/07b-mxfp4-outdecodes-q8-0.md)** — REFUTED: MXFP4's fewer bytes make it decode faster than Q8_0
-  - replaced by: 07a
+- **[07b](refuted/07b-mxfp4-outdecodes-q8-0.md)** — REFUTED: gpt-oss MXFP4 out-decodes Qwen Q8_0 by 1.21x
+  - replaced by: 07a, 07d
+- **[07c](refuted/07c-mxfp4-decodes-slower-than-a-dequant-format.md)** — REFUTED: MXFP4 decodes slower because decode pays dequantisation
+  - replaced by: 07d
 - **[16b](refuted/16b-cache-reset-is-caused-by-a-small-sliding-window.md)** — REFUTED: the cache reset is caused by a 128-token sliding window
   - replaced by: 16
 

@@ -1,43 +1,58 @@
 ---
 id: "07b"
 status: refuted
-title: "REFUTED: MXFP4's fewer bytes make it decode faster than Q8_0"
+title: "REFUTED: gpt-oss MXFP4 out-decodes Qwen Q8_0 by 1.21x"
 measured: 2026-08-12
-replaced_by: ["07a"]
+replaced_by: ["07a", "07d"]
+see_also: ["08a"]
 ---
 
-# REFUTED: MXFP4's fewer bytes make it decode faster than Q8_0
+# REFUTED: gpt-oss MXFP4 out-decodes Qwen Q8_0 by 1.21x
 
-**The refuted claim.** Decode is bandwidth-bound, so the format that reads fewer
-bytes per parameter decodes faster. gpt-oss-120b has 5.1B active parameters in
-MXFP4 at about 2.9 GB per token. Qwen3-Coder-30B has 3.3B active parameters in
-Q8_0 at about 3.5 GB per token. The arithmetic predicts gpt-oss decodes
+**The refuted claim.** Decode is bandwidth-bound, so the model that reads fewer
+bytes per token decodes faster. gpt-oss-120b has 5.1B active parameters in MXFP4
+at about 2.9 GB per token. Qwen3-Coder-30B has 3.3B active parameters in Q8_0 at
+about 3.5 GB per token. The arithmetic predicts that gpt-oss decodes
 **1.21x faster**.
 
 **What the measurement shows.** gpt-oss decodes at **0.79x**. It is slower, not
 faster.
 
-| | decode | effective bandwidth |
-|---|---:|---:|
-| Qwen3-Coder-30B Q8_0 | **63.34 t/s** | 221 GB/s |
-| gpt-oss-120b MXFP4 | **50.21 t/s** | 143 GB/s |
+| | decode (tg64) |
+|---|---:|
+| Qwen3-Coder-30B Q8_0 | **63.34 +/- 0.48 t/s** |
+| gpt-oss-120b MXFP4 | **50.21 +/- 0.23 t/s** |
 
-Measured at matched shallow depth.
+Measured at matched shallow depth. The prediction misses by a factor of about
+1.5, which is far outside the ~4% noise floor established in
+[08b](../verified/08b-the-bench-noise-floor-is-4-percent.md).
 
-## Why the arithmetic misleads
+**A prediction was written down and reality contradicted it. That is what this
+file records.**
 
-The arithmetic is correct. The conclusion does not follow from it.
+## What this does NOT establish
 
-MXFP4 achieves only 143 GB/s of effective bandwidth against Q8_0's 221 GB/s.
-Decode has no native FP4 path, so it pays `vec_dot_mxfp4_q8_1` dequantisation for
-every byte. Q8_0 unpacks almost for free. See
-[07a](../verified/07a-the-native-fp4-path-is-prefill-only.md).
+This is a comparison between **two different models**, not between two formats.
+gpt-oss and Qwen differ in architecture, layer count, total parameter count, MoE
+expert-gather traffic and attention type. Format is one of many variables, and it
+is not controlled.
 
-**"Format beats parameter count here" is false on decode.** Fewer bytes help only
-if you can read them at the same rate.
+[08a](../verified/08a-there-is-no-universal-prefill-ceiling.md) states the rule
+that applies here: **cross-model rows are indicative and same-model rows are
+evidence.** By that rule this measurement refutes the specific prediction above,
+and it does not refute or establish anything about MXFP4 as a format.
+
+The wider claim, that MXFP4 decodes slower as a **format**, has since been tested
+on one model with format as the only variable. It is false. MXFP4 decodes
+**1.36x faster** than Q8_0. See
+[07d](../verified/07d-mxfp4-decodes-faster-than-q8-0.md).
+
+So the gap measured here belongs to the two models and not to their formats,
+exactly as the cross-model rule predicts.
 
 ## Why this is worth keeping
 
-This box has no single effective bandwidth figure, and this refutation is the
-reason. Qwen reaches 221 GB/s and gpt-oss reaches 143 GB/s on the same hardware.
-Anyone who quotes one number for the machine will mispredict the other model.
+The bytes-per-parameter arithmetic is correct and the conclusion still does not
+follow. Anyone sizing a model by active parameters times bytes per parameter will
+make this same prediction, and on this box it was wrong by 1.5x in the wrong
+direction.

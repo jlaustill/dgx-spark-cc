@@ -3,7 +3,7 @@ id: "13a"
 status: verified
 title: MXFP4 beats Q4_K_M on prefill by 1.19x to 1.47x
 measured: 2026-08-12
-see_also: ["07a", "13b", "13c", "08a"]
+see_also: ["07a", "07d", "13b", "13c", "08a"]
 ---
 
 # MXFP4 beats Q4_K_M on prefill by 1.19x to 1.47x
@@ -59,3 +59,7 @@ path, and MXFP4 is also smaller. See
 
 The speed is not free. See
 [13c](13c-the-native-fp4-path-costs-6-4-percent-perplexity.md).
+
+**This experiment covers prefill only.** The equivalent same-model comparison for
+decode was run separately, on Qwen rather than gpt-oss, and it also favours
+MXFP4. See [07d](07d-mxfp4-decodes-faster-than-q8-0.md).

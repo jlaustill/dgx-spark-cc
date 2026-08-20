@@ -1,0 +1,27 @@
+V7.4 — same-model decode A/B, MXFP4_MOE against Q8_0
+Qwen3-Coder-30B-A3B-Instruct. llama.cpp 687e778. GB10 cc 12.1.
+MXFP4 arm built with: llama-quantize --allow-requantize <q8_0> <out> MXFP4_MOE 20
+Two launches, model order reversed between them (A/B then B/A) per finding 08b.
+V4 production server stopped for the duration and restored afterwards.
+
+=== launch 1 (Q8_0 first) ===
+| model                          |       size |     params | backend    | ngl |  fa |            test |                  t/s |
+| qwen3moe 30B.A3B Q8_0          |  30.25 GiB |    30.53 B | CUDA       |  -1 |   1 |            tg64 |         64.49 ± 0.42 |
+| qwen3moe 30B.A3B Q8_0          |  30.25 GiB |    30.53 B | CUDA       |  -1 |   1 |   tg64 @ d16384 |         41.94 ± 1.88 |
+| qwen3moe 30B.A3B MXFP4 MoE     |  15.90 GiB |    30.53 B | CUDA       |  -1 |   1 |            tg64 |         87.72 ± 0.51 |
+| qwen3moe 30B.A3B MXFP4 MoE     |  15.90 GiB |    30.53 B | CUDA       |  -1 |   1 |   tg64 @ d16384 |         52.54 ± 0.13 |
+
+=== launch 2 (MXFP4 first) ===
+| model                          |       size |     params | backend    | ngl |  fa |            test |                  t/s |
+| qwen3moe 30B.A3B MXFP4 MoE     |  15.90 GiB |    30.53 B | CUDA       |  -1 |   1 |            tg64 |         87.38 ± 0.89 |
+| qwen3moe 30B.A3B MXFP4 MoE     |  15.90 GiB |    30.53 B | CUDA       |  -1 |   1 |   tg64 @ d16384 |         52.54 ± 0.37 |
+| qwen3moe 30B.A3B Q8_0          |  30.25 GiB |    30.53 B | CUDA       |  -1 |   1 |            tg64 |         64.45 ± 0.28 |
+| qwen3moe 30B.A3B Q8_0          |  30.25 GiB |    30.53 B | CUDA       |  -1 |   1 |   tg64 @ d16384 |         42.98 ± 0.10 |
+
+build: 687e778 (1)
+
+RESULT
+  tg64        MXFP4 / Q8_0 = 1.360x (launch 1), 1.356x (launch 2)
+  tg64 d16384 MXFP4 / Q8_0 = 1.253x (launch 1), 1.222x (launch 2)
+  between-launch spread: MXFP4 0.4%, Q8_0 0.06% — inside the ~4% noise floor
+  file size ratio: 30.25 / 15.90 = 1.90x
