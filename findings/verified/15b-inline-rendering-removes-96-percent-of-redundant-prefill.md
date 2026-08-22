@@ -3,7 +3,7 @@ id: "15b"
 status: verified
 title: In-place system-message rendering removes 96.4 percent of redundant prefill
 measured: 2026-08-17
-see_also: ["15a", "15c", "15d"]
+see_also: ["11a", "14", "15a", "15c", "15d"]
 ---
 
 # In-place system-message rendering removes 96.4 percent of redundant prefill
@@ -40,6 +40,33 @@ The template is at `templates/dsv4-inline-assistant.jinja`.
 
 It keeps the preamble hoisted until the model first speaks, so only
 mid-conversation reminders move.
+
+## Confirmed in production
+
+The fix was applied to `dsv4-server.sh` on 2026-08-22 and hash-verified against
+the live server. The first real agentic session measured **0 redundant prefill
+tokens**, against the case study's 677,213.
+
+Reuse fraction across 27 turns, which is the shape
+[11a](11a-prefix-cache-payoff-is-bimodal.md) predicts:
+
+```
+    0-  9%  ##  2        <- cold starts
+   70- 79%  #  1
+   80- 89%  #  1
+   90- 99%  #######################  23
+```
+
+23 of 27 turns reused 90% or more. The two turns in the bottom bucket are cold
+starts, which no template can help.
+
+The evidence above this section is replay and eval. **This is the first
+production evidence**, and it is the first measurement where the redundant share
+is zero rather than merely reduced. Raw output is in
+`data/bench/V15-production-session-20260822.log`.
+
+One consequence: with redundant prefill gone, decode becomes 64% of model time.
+See [14](14-output-tokens-cost-17x-input-tokens.md).
 
 ## The quality question
 
