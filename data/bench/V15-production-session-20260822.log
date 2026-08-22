@@ -1,0 +1,24 @@
+First production session with the patched template applied to dsv4-server.sh.
+Template hash-verified live against templates/dsv4-inline-assistant.jinja
+(sha256 7f34b3f9…, len 14154; stock is d05566eb…, len 13026).
+Parsed with tools/logparse.py from journalctl -u dsv4-server.
+
+PREFILL     66,134 tok     4.2 min  avg 260.8 t/s
+DECODE       5,956 tok     7.5 min  avg 13.23 t/s
+TOTAL model time 11.7 min
+
+full re-reads (>20,000): 1   incremental: 26
+necessary     66,134 tok  100.0% of prefill
+REDUNDANT          0 tok    0.0% of prefill   = 0.0% of total model time
+
+reuse-fraction histogram:
+    0-  9%  ##  2        <- cold starts
+   70- 79%  #  1
+   80- 89%  #  1
+   90- 99%  #######################  23
+
+Case study (finding 17, stock template) for contrast:
+  redundant 677,213 tok / 57.9 min = 68.6% of total model time
+  decode    11.1 of 84.5 min = 13.1%
+Different task and different depth, so wall-clock is not comparable.
+The comparable figures are the normalised ones: redundant share and reuse fraction.

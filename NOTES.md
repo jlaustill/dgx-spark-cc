@@ -1,6 +1,6 @@
-# Verification notes — how `FINDINGS.md` was tested
+# Verification notes — how the findings were tested
 
-Companion to `FINDINGS.md`, which states only conclusions. This document
+Companion to [`findings/`](findings/), which states only conclusions. This document
 holds the process: what was tested, what each test predicted *before* it ran,
 what came back, and every assumption that turned out to be wrong — the original
 document's and my own.
