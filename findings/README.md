@@ -67,7 +67,7 @@ writing with `tools/findings-index.py --check`.
 
 <!-- BEGIN INDEX -->
 
-### verified (34)
+### verified (35)
 
 Survived a deliberate attempt to falsify it.
 
@@ -113,9 +113,10 @@ Survived a deliberate attempt to falsify it.
 - **[15e](verified/15e-gpt-oss-drops-mid-conversation-system-messages.md)** — gpt-oss silently drops mid-conversation system messages
 - **[16](verified/16-a-hardcoded-return-zero-costs-29000-tokens.md)** — One hardcoded return 0 costs about 29,000 tokens per session
 - **[17](verified/17-case-study-84-5-minutes-of-model-time.md)** — One real agentic session spent 68.6 percent of model time re-reading context
-- **[18](verified/18-operational-gotchas.md)** — Six operational traps that fail silently
+- **[18](verified/18-operational-gotchas.md)** — Seven operational traps that fail silently
+- **[20](verified/20-context-costs-more-than-the-kv-formula-says.md)** — Context costs 38 percent more than the KV formula says
 
-### unverified (5)
+### unverified (7)
 
 Measured once. Not yet re-tested against a falsification attempt. Each file names the test that would close it.
 
@@ -124,6 +125,8 @@ Measured once. Not yet re-tested against a falsification attempt. Each file name
 - **[05b](unverified/05b-what-governs-the-production-timeout.md)** — An idle timeout, not the first-byte budget, governs production
 - **[10a](unverified/10a-llamacpp-beats-ds4-server-for-v4.md)** — llama.cpp beats ds4-server for DeepSeek V4
 - **[12b](unverified/12b-the-ubatch-2048-memory-margin.md)** — The ubatch 2048 memory margin survives a worst-case request
+- **[19](unverified/19-removing-attention-layers-flattens-decode-decay.md)** — Removing attention layers flattens decode decay, where quantizing the KV cache did not
+- **[21](unverified/21-the-default-prompt-cache-is-too-small.md)** — The default prompt cache is too small, and costs 31 percent of model time
 
 ### refuted (5)
 

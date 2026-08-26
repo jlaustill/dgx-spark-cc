@@ -3,7 +3,7 @@ id: "15d"
 status: verified
 title: V4's template is the outlier, and in-place rendering is the mainstream convention
 measured: 2026-08-18
-see_also: ["15a", "15b", "15e"]
+see_also: ["15a", "15b", "15e", "19"]
 ---
 
 # V4's template is the outlier, and in-place rendering is the mainstream convention
@@ -47,3 +47,16 @@ generality across **templates**.
 
 gpt-oss has a different and separate defect. See
 [15e](15e-gpt-oss-drops-mid-conversation-system-messages.md).
+
+## Confirmed in production, 2026-08-26
+
+The Qwen row was read off the template. It has since been served. Qwen3-Coder-Next
+uses the same template family — only `messages[0]` becomes the system block, later
+system messages fall through the `message.role == "user" or "system" or
+"assistant"` branch and render where the client put them — and over 16 hours and
+2,173 requests the **median turn re-prefilled 0.50% of its context** (p75 2.08%).
+
+No template override was needed or passed. The prediction was that in-place
+rendering makes the prompt append-only; the production distribution is what
+append-only looks like. See [19](../unverified/19-removing-attention-layers-flattens-decode-decay.md)
+for the run these numbers come from.

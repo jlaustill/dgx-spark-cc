@@ -1,14 +1,14 @@
 ---
 id: "18"
 status: verified
-title: Six operational traps that fail silently
+title: Seven operational traps that fail silently
 measured: 2026-08-18
 see_also: ["15b"]
 ---
 
-# Six operational traps that fail silently
+# Seven operational traps that fail silently
 
-**Claim.** Each of these six behaviours produces a wrong result with no error
+**Claim.** Each of these seven behaviours produces a wrong result with no error
 message. Each one cost time on this box.
 
 ## 1. `sudo` scripts fail silently through a non-interactive wrapper
@@ -41,3 +41,28 @@ proxy back.
 
 It is DeepSeek's own speculative draft head, which uses `markov_head` and
 `confidence_head`. It has nothing to do with the DGX Spark.
+
+## 7. The DGX dashboard never applies a kernel ABI bump
+
+It applies updates through `aptdaemon role='role-upgrade-system'`, which is a
+*safe* upgrade, and a safe upgrade never installs new packages. A kernel ABI bump
+(6.17.0-**1029** to 6.17.0-**1031**) needs eight brand-new packages, because the
+version is part of the package name. apt reports them "kept back", the transaction
+succeeds having done nothing, and the notification never clears.
+
+Rebooting cannot help, and the tell is that `/var/run/reboot-required` does not
+exist — nothing installed, so nothing asked. Same-ABI kernel patches *do* apply,
+so the failure is intermittent and reads as random.
+
+Fix: `sudo apt full-upgrade` in a real terminal, then reboot. Expect it again on
+every future ABI bump.
+
+The same panel also advertises dependency **alternatives** as if they were
+updates. It offered `nvidia-firmware-580-580.159.03` while
+`nvidia-firmware-580-580.173.02` was installed and matched the running driver —
+an older version, presented as an upgrade — because `nvidia-kernel-common-580`
+declares firmware as a long OR-list and the dashboard enumerates the unsatisfied
+branches. `apt-get -s full-upgrade` correctly reported nothing to do.
+
+Trust `apt list --upgradable`. Do not trust the panel in either direction: it
+hides real kernel updates and invents fake firmware ones.

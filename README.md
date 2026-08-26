@@ -69,7 +69,7 @@ The harness reads captured `/v1/messages` bodies, which are raw session
 transcripts. Those are **deliberately not in this repo** — capture your own:
 
 ```bash
-server-scripts/dump-proxy.py                 # :8004 -> :8003, writes ~/e1-dumps
+tools/dump-proxy.py                          # :8004 -> :8003, writes ~/e1-dumps
 ANTHROPIC_BASE_URL=http://<host>:8004 claude  # then work normally
 ```
 
