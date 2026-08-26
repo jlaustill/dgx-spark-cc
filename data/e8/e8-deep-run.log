@@ -1,0 +1,34 @@
+[20:45:01] stopping production server
+[20:45:02] === arm yarn2-uncapped: ctx=524288 rope='--rope-scaling yarn --rope-scale 2' (cap lifted) ===
+[20:45:12]   loaded; n_ctx_slot = n_ctx_slot = 524288
+[yarn2-uncapped-253952] haystack 254,023 tokens (target 253,952)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  243s  prompt=254052
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  3s  prompt=254053
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  3s  prompt=254053
+[yarn2-uncapped-253952] 3/3 at 254,023 tokens
+[yarn2-uncapped-393216] haystack 393,296 tokens (target 393,216)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  460s  prompt=393325
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  5s  prompt=393326
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  5s  prompt=393326
+[yarn2-uncapped-393216] 3/3 at 393,296 tokens
+[yarn2-uncapped-516096] haystack 516,180 tokens (target 516,096)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  703s  prompt=516208
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  6s  prompt=516209
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  6s  prompt=516209
+[yarn2-uncapped-516096] 3/3 at 516,180 tokens
+[21:09:34] === arm naive-uncapped: ctx=524288 rope='none' (cap lifted) ===
+[21:09:44]   loaded; n_ctx_slot = n_ctx_slot = 524288
+[naive-uncapped-393216] haystack 393,296 tokens (target 393,216)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  460s  prompt=393325
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  5s  prompt=393326
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  5s  prompt=393326
+[naive-uncapped-393216] 3/3 at 393,296 tokens
+[naive-uncapped-516096] haystack 516,180 tokens (target 516,096)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  704s  prompt=516208
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  6s  prompt=516209
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  6s  prompt=516209
+[naive-uncapped-516096] 3/3 at 516,180 tokens
+[21:29:52] restarting production server
+[21:29:52] done
+
+[exited with code 0]

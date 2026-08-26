@@ -1,0 +1,20 @@
+[yarn2-131072] haystack 131,152 tokens (target 131,072)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  103s  prompt=131181
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  2s  prompt=131182
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  2s  prompt=131182
+[yarn2-131072] 3/3 at 131,152 tokens
+[yarn2-253952] haystack 254,023 tokens (target 253,952)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  244s  prompt=254052
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  3s  prompt=254053
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  3s  prompt=254053
+[yarn2-253952] 3/3 at 254,023 tokens
+[yarn2-393216] haystack 393,296 tokens (target 393,216)
+  ARGON-7   ERROR HTTPError: HTTP Error 400: Bad Request
+  BOREAL-3  ERROR HTTPError: HTTP Error 400: Bad Request
+  CYGNUS-9  ERROR HTTPError: HTTP Error 400: Bad Request
+[yarn2-393216] 0/3 at 393,296 tokens
+[yarn2-516096] haystack 516,180 tokens (target 516,096)
+  ARGON-7   ERROR HTTPError: HTTP Error 400: Bad Request
+  BOREAL-3  ERROR HTTPError: HTTP Error 400: Bad Request
+  CYGNUS-9  ERROR HTTPError: HTTP Error 400: Bad Request
+[yarn2-516096] 0/3 at 516,180 tokens

@@ -67,7 +67,7 @@ writing with `tools/findings-index.py --check`.
 
 <!-- BEGIN INDEX -->
 
-### verified (35)
+### verified (36)
 
 Survived a deliberate attempt to falsify it.
 
@@ -115,6 +115,7 @@ Survived a deliberate attempt to falsify it.
 - **[17](verified/17-case-study-84-5-minutes-of-model-time.md)** — One real agentic session spent 68.6 percent of model time re-reading context
 - **[18](verified/18-operational-gotchas.md)** — Seven operational traps that fail silently
 - **[20](verified/20-context-costs-more-than-the-kv-formula-says.md)** — Context costs 38 percent more than the KV formula says
+- **[22](verified/22-the-context-ceiling-was-the-server-not-the-model.md)** — Qwen3-Coder-Next's context ceiling was the server, not the model
 
 ### unverified (7)
 

@@ -1,0 +1,37 @@
+diff --git a/tools/server/server-context.cpp b/tools/server/server-context.cpp
+index 38d2e5c..6f024eb 100644
+--- a/tools/server/server-context.cpp
++++ b/tools/server/server-context.cpp
+@@ -1,3 +1,5 @@
++#include <cstdlib>
++
+ #include "server-context.h"
+ #include "server-chat.h"
+ #include "server-common.h"
+@@ -1309,8 +1311,24 @@ private:
+ 
+         int n_ctx_slot = llama_n_ctx_seq(ctx_tgt);
+         if (n_ctx_slot > n_ctx_train) {
+-            SRV_WRN("the slot context (%d) exceeds the training context of the model (%d) - capping\n", n_ctx_slot, n_ctx_train);
+-            n_ctx_slot = n_ctx_train;
++            // LLAMA_ALLOW_CTX_OVERFLOW: verification-only escape hatch (E8).
++            // Undefined in normal use, so this is inert and the cap still applies.
++            //
++            // The cap is correct as a default: serving past n_ctx_train without a
++            // sound rope mapping produces silent garbage, measured at 34x
++            // perplexity on gpt-oss-120b. But it is unconditional, so it also
++            // blocks a *correctly* scaled config -- e.g. --rope-scale 2 on a model
++            // whose vendor config carries no YaRN, where every position still maps
++            // inside the trained range. Setting this variable says "I have measured
++            // this model's tolerance and I accept the risk".
++            //
++            // Do not set it without that measurement.
++            if (std::getenv("LLAMA_ALLOW_CTX_OVERFLOW") != nullptr) {
++                SRV_WRN("the slot context (%d) exceeds the training context of the model (%d) - NOT capping, LLAMA_ALLOW_CTX_OVERFLOW is set\n", n_ctx_slot, n_ctx_train);
++            } else {
++                SRV_WRN("the slot context (%d) exceeds the training context of the model (%d) - capping\n", n_ctx_slot, n_ctx_train);
++                n_ctx_slot = n_ctx_train;
++            }
+         }
+ 
+         slots.clear();

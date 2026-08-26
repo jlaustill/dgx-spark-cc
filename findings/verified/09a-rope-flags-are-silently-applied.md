@@ -3,7 +3,7 @@ id: "09a"
 status: verified
 title: The server caps context but does not reset the rope parameters
 measured: 2026-08-17
-see_also: ["09b", "09c"]
+see_also: ["09b", "09c", "22"]
 ---
 
 # The server caps context but does not reset the rope parameters
@@ -53,3 +53,18 @@ attention. The server logs this, and the line is easy to miss.
 
 For the size of the damage, see
 [09b](09b-rope-mismatch-costs-34x-perplexity.md).
+
+## Reproduced on a second model, 2026-08-26
+
+Qwen3-Coder-Next at `--ctx-size 524288` against a 262,144 training context:
+
+```
+W srv load_model: the slot context (524288) exceeds the training context of the
+                  model (262144) - capping
+```
+
+Capped, and the rope flags applied regardless — the same pairing as gpt-oss. The
+clamp is `tools/server/server-context.cpp:1310` and it is unconditional, with no
+flag or env var to override it. That is now patchable: see
+[22](22-the-context-ceiling-was-the-server-not-the-model.md) and
+`tools/patches/e8-allow-ctx-overflow.patch`.

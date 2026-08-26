@@ -1,0 +1,10 @@
+[naive-uncapped-393216] haystack 393,296 tokens (target 393,216)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  460s  prompt=393325
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  5s  prompt=393326
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  5s  prompt=393326
+[naive-uncapped-393216] 3/3 at 393,296 tokens
+[naive-uncapped-516096] haystack 516,180 tokens (target 516,096)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  704s  prompt=516208
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  6s  prompt=516209
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  6s  prompt=516209
+[naive-uncapped-516096] 3/3 at 516,180 tokens

@@ -22,12 +22,23 @@
 #     96.4%-of-redundant-prefill bug -- is a DeepSeek V4 template artifact and
 #     does NOT apply here. No template override is needed or wanted.
 #
-# Context is native 262144 (rope_scaling: null). Do NOT pass --rope-scaling to
-# stretch it: see findings/verified on gpt-oss, where stacking YaRN silently
-# corrupted positions at the ceiling (34x perplexity blow-up).
+# Context is 524288 -- TWICE the documented native 262144. This is measured, not
+# assumed. See findings/verified/22. Needle retrieval at 20/50/80% depth is 3/3 at
+# 516,180 tokens, and it is 3/3 WITHOUT rope scaling, so no rope flags are passed:
+# --rope-scale 2 changed nothing at depth and cost 1.3% perplexity at 8k.
 #
-#   ./qwen3next-server.sh                  # 256k context
-#   QN_CTX=131072 ./qwen3next-server.sh    # smaller, faster to fill
+# REQUIRES A PATCHED llama-server. server-context.cpp:1310 caps n_ctx_slot to
+# n_ctx_train unconditionally; tools/patches/e8-allow-ctx-overflow.patch gates that
+# on LLAMA_ALLOW_CTX_OVERFLOW, exported below. On an UNPATCHED binary the variable
+# is ignored, the server silently caps back to 262144, and requests past that
+# return HTTP 400 -- check the startup log for "NOT capping" to confirm.
+#
+# The limit of the evidence: retrieval is a weak probe. It shows the model can
+# find a needle 413k tokens back. It does NOT show reasoning quality holds there,
+# and perplexity cannot be run at this depth on a 121 GB box (148 GiB of logits).
+#
+#   ./qwen3next-server.sh                  # 512k context
+#   QN_CTX=262144 ./qwen3next-server.sh    # vendor-documented ceiling, unpatched-safe
 #   QN_KV_TYPE=q8_0 ./qwen3next-server.sh  # only if you actually need the GiB
 
 set -euo pipefail
@@ -36,7 +47,7 @@ BIN="${QN_BIN:-/home/linux/llama.cpp/build/bin/llama-server}"
 MODEL="${QN_MODEL:-/home/linux/models/qwen3next/Qwen3-Coder-Next-Q4_K_M.gguf}"
 PORT="${QN_PORT:-8003}"
 HOST="${QN_HOST:-127.0.0.1}"
-CTX="${QN_CTX:-262144}"
+CTX="${QN_CTX:-524288}"
 KV_TYPE="${QN_KV_TYPE:-f16}"
 LOAD_MODE="${QN_LOAD_MODE:-mlock}"
 # llama.cpp defaults n_ubatch to 512, which caps arithmetic intensity on prefill.
@@ -61,8 +72,11 @@ PER_TOK=$([[ $KV_TYPE == f16 ]] && echo 34000 || echo 21712)
 KV_GIB=$(( CTX * PER_TOK / 1073741824 ))
 echo "Qwen3-Coder-Next Q4_K_M  ctx=$CTX  kv=$KV_TYPE  ub=$UBATCH  cache-ram=${CACHE_RAM}MiB  ~45 GiB weights + ~${KV_GIB} GiB KV"
 
+# Lifts the unconditional cap at server-context.cpp:1310. Inert on a stock build.
+export LLAMA_ALLOW_CTX_OVERFLOW=1
+
 if (( CTX > 262144 )); then
-  echo "warning: ctx > 262144 exceeds max_position_embeddings and needs rope stretching — don't." >&2
+  echo "note: ctx $CTX exceeds the documented 262144; needs the e8 patch (see findings 22)" >&2
 fi
 
 # --jinja is mandatory: without it llama-server ignores the model's tool-call

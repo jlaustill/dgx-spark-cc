@@ -30,6 +30,7 @@ findings/            conclusions, one claim per file, filed by status
   refuted/             tested and found false, kept so nobody re-derives it
 NOTES.md             methodology, test log, falsified assumptions
 tools/               the verification harness
+  patches/           local llama.cpp deviations from the pinned commit
 templates/           stock and patched DeepSeek V4 chat templates
 results/             per-test writeups and the pre-verification original
 data/                raw measurement output — benches, replays, session logs

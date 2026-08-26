@@ -1,0 +1,10 @@
+[native-131072] haystack 131,152 tokens (target 131,072)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  102s  prompt=131181
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  2s  prompt=131182
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  2s  prompt=131182
+[native-131072] 3/3 at 131,152 tokens
+[native-253952] haystack 254,023 tokens (target 253,952)
+  ARGON-7   HIT  want 4917-QX got '4917-QX'  243s  prompt=254052
+  BOREAL-3  HIT  want 8264-LM got '8264-LM'  3s  prompt=254053
+  CYGNUS-9  HIT  want 3705-TD got '3705-TD'  3s  prompt=254053
+[native-253952] 3/3 at 254,023 tokens

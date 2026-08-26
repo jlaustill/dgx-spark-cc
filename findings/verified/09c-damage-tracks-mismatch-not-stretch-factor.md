@@ -3,7 +3,7 @@ id: "09c"
 status: verified
 title: Rope damage tracks mismatch with the trained mapping, not the stretch factor
 measured: 2026-08-18
-see_also: ["09a", "09b"]
+see_also: ["09a", "09b", "22"]
 ---
 
 # Rope damage tracks mismatch with the trained mapping, not the stretch factor
@@ -57,6 +57,17 @@ at x1 barely moves.
 **This supports the table above. It does not prove it.** These two models differ
 in weights, architecture and training data, so base-length-and-factor remains a
 heuristic for model selection and not a measured law.
+
+**The table stops at 131,072 because the instrument does, not because the sweep
+did.** `e5-sweep.sh` declares `DEPTHS="8192 32768 131072 262144"`. The 262,144
+arms all crashed: `llama-perplexity` reserves `n_ctx * n_vocab * 4` bytes of
+logits, which is 148 GiB at that depth with a 151,936 vocab, and
+`data/e5/d262144-*.log` are the resulting `std::bad_alloc` dumps. Every depth in
+the published table is therefore INSIDE Qwen3-Coder-30B's native window, so this
+finding measures compression of the mapping and says nothing about extension past
+the trained ceiling. For that, see
+[22](22-the-context-ceiling-was-the-server-not-the-model.md), which had to change
+instrument to answer it.
 
 **262,144 is unreachable on this box.** `llama-perplexity` holds
 `n_ctx x n_vocab x 4` bytes of logits. At Qwen's 151,936 vocab that is 148.4 GiB,

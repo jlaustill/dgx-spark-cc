@@ -1,0 +1,32 @@
+diff --git a/ggml/src/ggml-cuda/common.cuh b/ggml/src/ggml-cuda/common.cuh
+index d27d8ac..12fa048 100644
+--- a/ggml/src/ggml-cuda/common.cuh
++++ b/ggml/src/ggml-cuda/common.cuh
+@@ -283,7 +283,12 @@ static const char * cu_get_error_str(CUresult err) {
+ #define AMPERE_MMA_AVAILABLE
+ #endif // !defined(GGML_USE_HIP) && __CUDA_ARCH__ >= GGML_CUDA_CC_AMPERE
+ 
+-#if !defined(GGML_USE_HIP) && __CUDA_ARCH__ >= GGML_CUDA_CC_BLACKWELL && __CUDA_ARCH__ < GGML_CUDA_CC_RUBIN
++// GGML_NO_BLACKWELL_MMA: verification-only ablation switch (V7.1). Undefined in
++// normal builds, so this is inert. When defined it suppresses the DEVICE-side
++// selector; blackwell_mma_available() below suppresses the HOST side from the
++// same flag, so the two cannot desynchronise -- which is what invalidated an
++// earlier attempt that patched only one of them.
++#if !defined(GGML_USE_HIP) && !defined(GGML_NO_BLACKWELL_MMA) && __CUDA_ARCH__ >= GGML_CUDA_CC_BLACKWELL && __CUDA_ARCH__ < GGML_CUDA_CC_RUBIN
+ #    define BLACKWELL_MMA_AVAILABLE
+ #endif // !defined(GGML_USE_HIP) && __CUDA_ARCH__ >= GGML_CUDA_CC_BLACKWELL
+ 
+@@ -358,8 +363,13 @@ static bool cp_async_available(const int cc) {
+ }
+ 
+ static bool blackwell_mma_available(const int cc) {
++#ifdef GGML_NO_BLACKWELL_MMA
++    GGML_UNUSED(cc);
++    return false;   // paired with the device guard above; see V7.1
++#else
+     return GGML_CUDA_CC_IS_NVIDIA(cc) && ggml_cuda_highest_compiled_arch(cc) >= GGML_CUDA_CC_BLACKWELL &&
+            ggml_cuda_highest_compiled_arch(cc) < GGML_CUDA_CC_RUBIN;
++#endif
+ }
+ 
+ // Checks whether the tensor's base data pointer and higher-dimensional strides are byte-aligned to `alignment` bytes.

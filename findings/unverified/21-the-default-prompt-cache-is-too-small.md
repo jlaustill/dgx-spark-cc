@@ -3,7 +3,7 @@ id: "21"
 status: unverified
 title: The default prompt cache is too small, and costs 31 percent of model time
 measured: 2026-08-26
-see_also: ["02a", "04a", "11a", "19"]
+see_also: ["02a", "04a", "11a", "19", "22"]
 ---
 
 # The default prompt cache is too small, and costs 31 percent of model time
@@ -92,6 +92,12 @@ day of comparable use:
 sudo journalctl -u qwen3next-server --no-pager -o cat \
   | grep -c 'making room for prompt cache entry'
 ```
+
+**Re-baseline first.** The server moved to `--ctx-size 524288` on 2026-08-26
+(see [22](../verified/22-the-context-ceiling-was-the-server-not-the-model.md)),
+which makes cache entries proportionally larger — a 516k conversation is ~16.6
+GiB of saved state against a 24 GiB cache. The 9.4% figure below was measured at
+262,144 and is not a like-for-like comparison any more.
 
 Zero evictions, and a full-re-prefill rate that has dropped from 9.4%, closes it.
 Zero evictions with the rate *unchanged* is the more interesting result: it would
