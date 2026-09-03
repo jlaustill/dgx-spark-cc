@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate the index block in findings/README.md from each finding's frontmatter.
+"""Regenerate the index block in findings/spark/README.md from each finding's frontmatter.
 
 Also validates the tree: unique ids, known statuses, resolvable cross-links, and
 that a file's directory matches its declared status.
@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-FINDINGS = ROOT / "findings"
+FINDINGS = ROOT / "findings" / "spark"
 README = FINDINGS / "README.md"
 STATUSES = ["verified", "unverified", "refuted"]
 BEGIN, END = "<!-- BEGIN INDEX -->", "<!-- END INDEX -->"

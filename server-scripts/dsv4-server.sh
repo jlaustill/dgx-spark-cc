@@ -58,7 +58,7 @@ fi
 #   replay:  591,519 -> 154,705 prefilled tokens; 38.8 -> 10.5 min (96.4% of
 #            redundant prefill removed)
 #   eval:    4/10 -> 10/10 solved, 14.3h -> 8.6h, prefill per turn 17x lower
-# See findings/verified/15a..15c. DS_TEMPLATE=stock reverts to the shipped one.
+# See findings/spark/verified/15a..15c. DS_TEMPLATE=stock reverts to the shipped one.
 TEMPLATE="${DS_TEMPLATE:-/home/linux/code/dgx-spark-cc/templates/dsv4-inline-assistant.jinja}"
 TEMPLATE_ARG=()
 if [[ $TEMPLATE != stock ]]; then

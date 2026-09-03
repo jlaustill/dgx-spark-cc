@@ -23,7 +23,7 @@
 #     does NOT apply here. No template override is needed or wanted.
 #
 # Context is 524288 -- TWICE the documented native 262144. This is measured, not
-# assumed. See findings/verified/22. Needle retrieval at 20/50/80% depth is 3/3 at
+# assumed. See findings/spark/verified/22. Needle retrieval at 20/50/80% depth is 3/3 at
 # 516,180 tokens, and it is 3/3 WITHOUT rope scaling, so no rope flags are passed:
 # --rope-scale 2 changed nothing at depth and cost 1.3% perplexity at 8k.
 #

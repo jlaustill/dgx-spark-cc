@@ -10,24 +10,25 @@ chat template renders them.** One template override removes it.
 On a 10-task agentic eval built from real closed issues — scored by the project's
 own gcc / cppcheck / clang-tidy / MISRA gate — that override took the local model
 from **4/10 to 10/10 solved**, in 40% less wall-clock, with **17× less prefill per
-turn**. See [15a](findings/verified/15a-a-trailing-system-message-rewrites-the-head.md),
-[15b](findings/verified/15b-inline-rendering-removes-96-percent-of-redundant-prefill.md)
-and [15c](findings/verified/15c-the-patched-template-solves-10-of-10.md).
+turn**. See [15a](findings/spark/verified/15a-a-trailing-system-message-rewrites-the-head.md),
+[15b](findings/spark/verified/15b-inline-rendering-removes-96-percent-of-redundant-prefill.md)
+and [15c](findings/spark/verified/15c-the-patched-template-solves-10-of-10.md).
 
 ## Start here
 
 | | |
 |---|---|
-| **[findings/](findings/)** | What is true. One claim per file, and the directory is the status. |
+| **[findings/](findings/)** | What is true. One claim per file, filed by machine, then by status. |
 | **[NOTES.md](NOTES.md)** | For notes on how we came to these findings. |
 
 ## Layout
 
 ```
-findings/            conclusions, one claim per file, filed by status
-  verified/            survived a deliberate attempt to falsify it
-  unverified/          measured once, with the completing test named
-  refuted/             tested and found false, kept so nobody re-derives it
+findings/            conclusions, one claim per file, filed by machine
+  spark/               DGX Spark (GB10) -- the original study
+    verified/            survived a deliberate attempt to falsify it
+    unverified/          measured once, with the completing test named
+    refuted/             tested and found false, kept so nobody re-derives it
 NOTES.md             methodology, test log, falsified assumptions
 tools/               the verification harness
   patches/           local llama.cpp deviations from the pinned commit
@@ -114,9 +115,9 @@ tools/arm.sh patched && tools/replay.py --tag patched
 - **`llama-server` binds its chat template at startup.** `/apply-template` silently
   ignores a `chat_template` in the request body, so a per-request A/B compares two
   identical streams and reads as "no effect".
-- **Seven claims sit in [findings/unverified/](findings/unverified/)** — measured
+- **Seven claims sit in [findings/spark/unverified/](findings/spark/unverified/)** — measured
   once, not yet re-tested. Each names the test that would close it. Two further
-  rows inside [06c](findings/verified/06c-kv-cost-per-token-by-architecture.md)
+  rows inside [06c](findings/spark/verified/06c-kv-cost-per-token-by-architecture.md)
   are calculated rather than measured, and are marked in place.
 - **The E7 template fix is now proven on both throughput and task success**
   (10/10 vs 4/10 on the eval). Stock's 4/10 is a *lower bound* — 9 of its 10 tasks
@@ -136,7 +137,7 @@ editing the repo with tools. Results in `results/eval/`.
 
 **Every experiment the original document opened is now closed** — E1 through E7.
 E5's answer is
-[09c](findings/verified/09c-damage-tracks-mismatch-not-stretch-factor.md): there is no threshold in the
+[09c](findings/spark/verified/09c-damage-tracks-mismatch-not-stretch-factor.md): there is no threshold in the
 stretch factor, because the damage tracks mismatch with the trained mapping, not
 the multiplier.
 
