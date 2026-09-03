@@ -114,7 +114,7 @@ tools/arm.sh patched && tools/replay.py --tag patched
 - **`llama-server` binds its chat template at startup.** `/apply-template` silently
   ignores a `chat_template` in the request body, so a per-request A/B compares two
   identical streams and reads as "no effect".
-- **Five claims sit in [findings/unverified/](findings/unverified/)** — measured
+- **Seven claims sit in [findings/unverified/](findings/unverified/)** — measured
   once, not yet re-tested. Each names the test that would close it. Two further
   rows inside [06c](findings/verified/06c-kv-cost-per-token-by-architecture.md)
   are calculated rather than measured, and are marked in place.
