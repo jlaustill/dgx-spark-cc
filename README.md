@@ -29,6 +29,7 @@ findings/            conclusions, one claim per file, filed by machine
     verified/            survived a deliberate attempt to falsify it
     unverified/          measured once, with the completing test named
     refuted/             tested and found false, kept so nobody re-derives it
+  mira/                RTX 5070 Ti + Ryzen 9 7950X3D -- the offload machine
 NOTES.md             methodology, test log, falsified assumptions
 tools/               the verification harness
   patches/           local llama.cpp deviations from the pinned commit

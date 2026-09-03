@@ -7,7 +7,13 @@ is the machine.
 findings/
   spark/     DGX Spark (GB10), 121 GB unified LPDDR5X
     verified/ unverified/ refuted/
+  mira/      RTX 5070 Ti (16 GB GDDR7) + Ryzen 9 7950X3D + 124 GB DDR5
+    verified/ unverified/ refuted/
 ```
+
+Both trees run llama.cpp pinned at `687e778`, so numbers are comparable across
+them. A claim that compares the two machines lives with the machine it was taken
+to characterise.
 
 ## Why the machine is part of the path
 

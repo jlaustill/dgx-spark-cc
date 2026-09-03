@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate the index block in findings/spark/README.md from each finding's frontmatter.
+"""Regenerate the index block in each machine's findings README from its frontmatter.
 
 Also validates the tree: unique ids, known statuses, resolvable cross-links, and
 that a file's directory matches its declared status.
@@ -12,8 +12,13 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-FINDINGS = ROOT / "findings" / "spark"
-README = FINDINGS / "README.md"
+FINDINGS_ROOT = ROOT / "findings"
+
+
+def machines():
+    """Every findings/<machine>/ that has the three status directories."""
+    return [d for d in sorted(FINDINGS_ROOT.iterdir())
+            if d.is_dir() and all((d / s).is_dir() for s in STATUSES)]
 STATUSES = ["verified", "unverified", "refuted"]
 BEGIN, END = "<!-- BEGIN INDEX -->", "<!-- END INDEX -->"
 
@@ -48,10 +53,10 @@ def parse_frontmatter(path):
     return meta
 
 
-def collect():
+def collect(base):
     out = []
     for status in STATUSES:
-        for path in sorted((FINDINGS / status).glob("*.md")):
+        for path in sorted((base / status).glob("*.md")):
             meta = parse_frontmatter(path)
             meta["_path"] = path
             meta["_dir"] = status
@@ -105,22 +110,28 @@ def render(findings):
 
 def main():
     check_only = "--check" in sys.argv
-    findings = collect()
-    problems, _ = validate(findings)
-    for p in problems:
-        print(f"PROBLEM: {p}", file=sys.stderr)
+    rc = 0
+    for base in machines():
+        findings = collect(base)
+        readme = base / "README.md"
+        problems, _ = validate(findings)
+        for p in problems:
+            print(f"PROBLEM [{base.name}]: {p}", file=sys.stderr)
+        if problems:
+            rc = 1
 
-    if not check_only:
-        text = README.read_text()
-        if BEGIN not in text or END not in text:
-            raise SystemExit(f"{README}: missing {BEGIN} / {END} markers")
-        new = re.sub(re.escape(BEGIN) + r".*?" + re.escape(END), render(findings), text, flags=re.S)
-        README.write_text(new)
-        print(f"wrote {README.relative_to(ROOT)}: {len(findings)} findings", file=sys.stderr)
+        if not check_only:
+            text = readme.read_text()
+            if BEGIN not in text or END not in text:
+                raise SystemExit(f"{readme}: missing {BEGIN} / {END} markers")
+            new = re.sub(re.escape(BEGIN) + r".*?" + re.escape(END),
+                         render(findings), text, flags=re.S)
+            readme.write_text(new)
+            print(f"wrote {readme.relative_to(ROOT)}: {len(findings)} findings", file=sys.stderr)
 
-    counts = {s: sum(1 for f in findings if f["_dir"] == s) for s in STATUSES}
-    print(" ".join(f"{s}={counts[s]}" for s in STATUSES), file=sys.stderr)
-    return 1 if problems else 0
+        counts = {s: sum(1 for f in findings if f["_dir"] == s) for s in STATUSES}
+        print(f"{base.name}: " + " ".join(f"{s}={counts[s]}" for s in STATUSES), file=sys.stderr)
+    return rc
 
 
 if __name__ == "__main__":
