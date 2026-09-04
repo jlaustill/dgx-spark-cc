@@ -1,0 +1,151 @@
+{
+  "experiment": "X1-resident-model-ratio",
+  "schema": 1,
+  "machine": "mira",
+  "hostname": "linux-Thelio-Mira",
+  "arch": "x86_64",
+  "timestamp": "2026-09-04T16:15:33.648332+00:00",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 5070 Ti",
+    "compute_cap": "12.0",
+    "vram_mib": 16303
+  },
+  "llamacpp_commit": "687e778",
+  "model": {
+    "path": "/home/linux/models/gptoss/gpt-oss-20b-MXFP4.gguf",
+    "sha256": "27cd6c432c7672cb812a92f611cf3ba7bbc35928262bb1e1253ff4ee6ae35901"
+  },
+  "bench_flags": "-p 4096 -n 128 -d 0,16384,65536 -ngl 99 -fa on -r 3",
+  "launches": [
+    {
+      "launch": 1,
+      "rows": [
+        {
+          "test": "pp4096",
+          "t_s": 10738.82518,
+          "stddev": 15.528186,
+          "n_prompt": 4096,
+          "n_gen": 0,
+          "n_depth": 0,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "tg128",
+          "t_s": 241.943864,
+          "stddev": 0.838773,
+          "n_prompt": 0,
+          "n_gen": 128,
+          "n_depth": 0,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "pp4096 @ d16384",
+          "t_s": 8005.004922,
+          "stddev": 14.310878,
+          "n_prompt": 4096,
+          "n_gen": 0,
+          "n_depth": 16384,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "tg128 @ d16384",
+          "t_s": 213.885849,
+          "stddev": 1.457087,
+          "n_prompt": 0,
+          "n_gen": 128,
+          "n_depth": 16384,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "pp4096 @ d65536",
+          "t_s": 4067.415115,
+          "stddev": 1.832012,
+          "n_prompt": 4096,
+          "n_gen": 0,
+          "n_depth": 65536,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "tg128 @ d65536",
+          "t_s": 162.349963,
+          "stddev": 0.239497,
+          "n_prompt": 0,
+          "n_gen": 128,
+          "n_depth": 65536,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        }
+      ]
+    },
+    {
+      "launch": 2,
+      "rows": [
+        {
+          "test": "pp4096",
+          "t_s": 10650.831697,
+          "stddev": 9.871802,
+          "n_prompt": 4096,
+          "n_gen": 0,
+          "n_depth": 0,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "tg128",
+          "t_s": 241.613127,
+          "stddev": 0.810678,
+          "n_prompt": 0,
+          "n_gen": 128,
+          "n_depth": 0,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "pp4096 @ d16384",
+          "t_s": 7950.954077,
+          "stddev": 18.631878,
+          "n_prompt": 4096,
+          "n_gen": 0,
+          "n_depth": 16384,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "tg128 @ d16384",
+          "t_s": 213.480125,
+          "stddev": 1.424788,
+          "n_prompt": 0,
+          "n_gen": 128,
+          "n_depth": 16384,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "pp4096 @ d65536",
+          "t_s": 4035.550116,
+          "stddev": 4.289393,
+          "n_prompt": 4096,
+          "n_gen": 0,
+          "n_depth": 65536,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        },
+        {
+          "test": "tg128 @ d65536",
+          "t_s": 162.146765,
+          "stddev": 0.350038,
+          "n_prompt": 0,
+          "n_gen": 128,
+          "n_depth": 65536,
+          "n_gpu_layers": 99,
+          "flash_attn": 1
+        }
+      ]
+    }
+  ]
+}

@@ -20,10 +20,12 @@ and [15c](findings/spark/verified/15c-the-patched-template-solves-10-of-10.md).
 |---|---|
 | **[findings/](findings/)** | What is true. One claim per file, filed by machine, then by status. |
 | **[NOTES.md](NOTES.md)** | For notes on how we came to these findings. |
+| **[experiments/](experiments/)** | Runnable cross-machine protocols. **Start here if you are on a box with an open experiment.** |
 
 ## Layout
 
 ```
+experiments/         runnable cross-machine protocols, results filed per machine
 findings/            conclusions, one claim per file, filed by machine
   spark/               DGX Spark (GB10) -- the original study
     verified/            survived a deliberate attempt to falsify it
