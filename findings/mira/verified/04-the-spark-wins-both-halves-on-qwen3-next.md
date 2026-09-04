@@ -3,7 +3,7 @@ id: "04"
 status: verified
 title: The Spark beats this box on both halves of a turn for Qwen3-Next-80B
 measured: 2026-09-03
-see_also: ["01", "02", "03"]
+see_also: ["01", "02", "03", "06"]
 ---
 
 # The Spark beats this box on both halves of a turn for Qwen3-Next-80B
@@ -67,3 +67,7 @@ across sessions, so these carry within-session error bars only.
 
 **This is a throughput result, not a quality result.** It says nothing about
 which box solves more tasks; that needs the eval in `tools/eval-run.py`.
+
+**This measures the offload penalty, not the hardware.** With a model mira can
+hold entirely, the result reverses: mira wins every row by 2.1x to 3.5x. See
+[06](06-with-no-offload-mira-is-2-to-3-5x-faster.md).

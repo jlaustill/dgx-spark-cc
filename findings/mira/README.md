@@ -20,7 +20,7 @@ The measurement that changed a conclusion:
 
 <!-- BEGIN INDEX -->
 
-### verified (4)
+### verified (5)
 
 Survived a deliberate attempt to falsify it.
 
@@ -28,6 +28,7 @@ Survived a deliberate attempt to falsify it.
 - **[03](verified/03-repetitive-prompts-inflate-offloaded-moe-prefill.md)** — A repetitive prompt inflates offloaded-MoE prefill by 69 percent
 - **[04](verified/04-the-spark-wins-both-halves-on-qwen3-next.md)** — The Spark beats this box on both halves of a turn for Qwen3-Next-80B
 - **[05](verified/05-back-to-back-launch-variance.md)** — Back-to-back launch variance here is 0.45 percent, and is not spark's 4.3
+- **[06](verified/06-with-no-offload-mira-is-2-to-3-5x-faster.md)** — With nothing offloaded, mira is 2.1-2.4x on prefill and 3.1-3.5x on decode
 
 ### unverified (1)
 

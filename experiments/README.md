@@ -11,7 +11,7 @@ script can read without a human in the middle.
 
 | id | question | status |
 |---|---|---|
-| [X1](X1-resident-model-ratio/) | With the model fully resident on both boxes, what is the decode/prefill ratio between them? | **awaiting spark** |
+| [X1](X1-resident-model-ratio/) | With the model fully resident on both boxes, what is the decode/prefill ratio between them? | **done** — mira 2.1-2.4x prefill, 3.1-3.5x decode ([mira/06](../findings/mira/verified/06-with-no-offload-mira-is-2-to-3-5x-faster.md)) |
 
 ## If you are an agent picking this up cold
 
