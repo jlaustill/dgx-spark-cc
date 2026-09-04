@@ -67,7 +67,15 @@ if command -v nvidia-smi >/dev/null 2>&1; then
   CC=$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader | head -1)
   VRAM=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -1)
   USED=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -1)
-  ok "GPU: $GPU (cc $CC, ${VRAM} MiB, ${USED} MiB in use)"
+  # GB10 has nvidia-smi but no discrete VRAM: it answers '[N/A]', not a number.
+  # Record unknown rather than coerce to 0 — 0 MiB is a plausible wrong number.
+  [[ $VRAM =~ ^[0-9]+$ ]] || VRAM=
+  [[ $USED =~ ^[0-9]+$ ]] || USED=
+  if [[ -n $VRAM ]]; then
+    ok "GPU: $GPU (cc $CC, ${VRAM} MiB, ${USED:-?} MiB in use)"
+  else
+    ok "GPU: $GPU (cc $CC, unified memory — nvidia-smi reports no discrete VRAM)"
+  fi
 else
   GPU=unified; CC=na; VRAM=0
   ok "no nvidia-smi (unified-memory box); recording gpu as 'unified'"
@@ -101,7 +109,7 @@ def rows(d):
 res = {"experiment": "X1-resident-model-ratio", "schema": 1,
        "machine": machine, "hostname": platform.node(), "arch": platform.machine(),
        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-       "gpu": {"name": gpu, "compute_cap": cc, "vram_mib": int(vram)},
+       "gpu": {"name": gpu, "compute_cap": cc, "vram_mib": int(vram) if vram else None},
        "llamacpp_commit": commit, "model": {"path": model, "sha256": sha},
        "bench_flags": "-p 4096 -n 128 -d 0,16384,65536 -ngl 99 -fa on -r 3",
        "launches": [{"launch": i + 1, "rows": rows(d)} for i, d in enumerate(docs)]}

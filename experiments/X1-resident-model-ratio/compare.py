@@ -49,8 +49,11 @@ def main():
 
     ma, mb = mean_by_test(a), mean_by_test(b)
     print(f"X1 — gpt-oss-20b MXFP4 fully resident, llama.cpp {a['llamacpp_commit']}")
-    print(f"  mira  {a['gpu']['name']} ({a['gpu']['vram_mib']} MiB)   {a['timestamp'][:10]}")
-    print(f"  spark {b['gpu']['name']} ({b['gpu']['vram_mib']} MiB)   {b['timestamp'][:10]}")
+    def vram(d):  # None = unified memory, no discrete VRAM to report
+        v = d["gpu"]["vram_mib"]
+        return f"{v} MiB" if v else "unified"
+    print(f"  mira  {a['gpu']['name']} ({vram(a)})   {a['timestamp'][:10]}")
+    print(f"  spark {b['gpu']['name']} ({vram(b)})   {b['timestamp'][:10]}")
     print(f"\n{'test':>18} {'mira t/s':>12} {'spark t/s':>12} {'ratio':>8}   launch spread")
     print("-" * 76)
     for t in [k for k in ma if k in mb]:
